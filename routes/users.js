@@ -1,6 +1,10 @@
 var express = require('express');
 var router = express.Router();
 
+// BD 
+var User = require('../models/user');
+var debug = require('debug')('users-2:server');
+
 // Lista simulada de usuarios
 let usuarios = [
   { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com', plan: 'Básico', tipo: 'normal' },
@@ -10,11 +14,17 @@ let usuarios = [
 ];
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send(usuarios);
+router.get('/', async function(req, res, next) {
+  // control de errores
+  try{
+    const result = await User.find(); // llamada asíncrona
+    res.send(result.map((c) => c.cleanup())); // limpieza de atributos que se devuelven
+  } catch(e) {
+    debug('DB problem', e);
+    res.sendStatus(500);
+  }
 });
 
-module.exports = router;
 /* GET /users - Obtener todos los usuarios */
 router.get('/', function(req, res, next) {
   res.json(usuarios); // Enviar la lista de usuarios como respuesta JSON
@@ -33,17 +43,23 @@ router.get('/:id', function(req, res, next) {
 });
 
 /* POST /users - Crear un nuevo usuario */
-router.post('/', function(req, res, next) {
-  const nuevoUsuario = {
-    id: usuarios.length + 1, // Asignar un ID único
-    nombre: req.body.nombre,
-    email: req.body.email,
-    plan: req.body.plan || 'Básico', // Valor predeterminado
-    tipo: req.body.tipo || 'normal' // Valor predeterminado
-  };
+router.post('/', async function(req, res, next) {
+  const {nombre, email, plan, tipo} = req.body;
 
-  usuarios.push(nuevoUsuario); // Agregar usuario a la lista
-  res.status(201).json(nuevoUsuario); // Responder con el usuario creado
+  const user = new User({
+    nombre,
+    email,
+    plan,
+    tipo
+  });
+
+  try{
+    await user.save();
+    return res.sendStatus(201);
+  } catch(e) {
+    debug('DB problem', e);
+    res.sendStatus(500);
+  }
 });
 
 /* PUT /users/:id - Actualizar un usuario */
