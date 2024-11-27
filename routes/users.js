@@ -1,74 +1,108 @@
 var express = require('express');
 var router = express.Router();
+var mongoose = require('mongoose');
 
-// Lista simulada de usuarios
-let usuarios = [
-  { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com', plan: 'Básico', tipo: 'normal' },
-  { id: 2, nombre: 'María Gómez', email: 'maria@example.com', plan: 'Premium', tipo: 'admin' },
-  { id: 3, nombre: 'Carlos Ruiz', email: 'carlos@example.com', plan: 'Básico', tipo: 'normal' },
-  { id: 4, nombre: 'Ana López', email: 'ana@example.com', plan: 'Premium', tipo: 'normal' }
-];
+// BD 
+var User = require('../models/user');
+var debug = require('debug')('users-2:server');
 
-/* GET /users - Obtener todos los usuarios */
-router.get('/', function(req, res, next) {
-  res.json(usuarios); // Enviar la lista de usuarios como respuesta JSON
+/* GET users listing. */
+router.get('/', async function(req, res, next) {
+  // control de errores
+  try{
+    const result = await User.find(); // llamada asíncrona
+    res.send(result.map((c) => c.cleanup())); // limpieza de atributos que se devuelven
+  } catch(e) {
+    debug('DB problem', e);
+    res.sendStatus(500);
+  }
 });
 
 /* GET /users/:id - Obtener un usuario por ID */
-router.get('/:id', function(req, res, next) {
-  const id = parseInt(req.params.id); // Convertir ID de string a número
-  const usuario = usuarios.find(user => user.id === id);
+router.get('/:id', async function(req, res, next) {
+  const id = req.params.id; // Obtener el ID de la URL
+  try {
+    const usuario = await User.findById(id); // Buscar el usuario por ID en la base de datos
 
-  if (!usuario) {
-    return res.status(404).json({ message: 'Usuario no encontrado' });
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    res.json(usuario.cleanup()); // Devolver el usuario con la limpieza de atributos
+  } catch (e) {
+    debug('DB problem', e);
+    res.sendStatus(500);
   }
-
-  res.json(usuario);
 });
 
 /* POST /users - Crear un nuevo usuario */
-router.post('/', function(req, res, next) {
-  const nuevoUsuario = {
-    id: usuarios.length + 1, // Asignar un ID único
-    nombre: req.body.nombre,
-    email: req.body.email,
-    plan: req.body.plan || 'Básico', // Valor predeterminado
-    tipo: req.body.tipo || 'normal' // Valor predeterminado
-  };
+router.post('/', async function(req, res, next) {
+  const {nombre, email, plan, tipo} = req.body;
 
-  usuarios.push(nuevoUsuario); // Agregar usuario a la lista
-  res.status(201).json(nuevoUsuario); // Responder con el usuario creado
+  const user = new User({
+    nombre,
+    email,
+    plan,
+    tipo
+  });
+
+  try{
+    await user.save();
+    return res.sendStatus(201);
+  } catch(e) {
+    debug('DB problem', e);
+    res.sendStatus(500);
+  }
 });
 
 /* PUT /users/:id - Actualizar un usuario */
-router.put('/:id', function(req, res, next) {
-  const id = parseInt(req.params.id);
-  const usuario = usuarios.find(user => user.id === id);
+router.put('/:id', async function(req, res, next) {
+  const id = req.params.id; // Obtener el ID de la URL
+  const { nombre, email, plan, tipo } = req.body; // Obtener los datos a actualizar
 
-  if (!usuario) {
-    return res.status(404).json({ message: 'Usuario no encontrado' });
+  try {
+    const usuario = await User.findById(id); // Buscar el usuario por ID en la base de datos
+
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Actualizar los datos del usuario
+    usuario.nombre = nombre || usuario.nombre;
+    usuario.email = email || usuario.email;
+    usuario.plan = plan || usuario.plan;
+    usuario.tipo = tipo || usuario.tipo;
+
+    await usuario.save(); // Guardar los cambios en la base de datos
+    res.json(usuario.cleanup()); // Devolver el usuario actualizado
+  } catch (e) {
+    debug('DB problem', e);
+    res.sendStatus(500);
   }
-
-  // Actualizar los datos del usuario
-  usuario.nombre = req.body.nombre || usuario.nombre;
-  usuario.email = req.body.email || usuario.email;
-  usuario.plan = req.body.plan || usuario.plan;
-  usuario.tipo = req.body.tipo || usuario.tipo;
-
-  res.json(usuario); // Responder con el usuario actualizado
 });
 
 /* DELETE /users/:id - Eliminar un usuario */
-router.delete('/:id', function(req, res, next) {
-  const id = parseInt(req.params.id);
-  const indice = usuarios.findIndex(user => user.id === id);
+router.delete('/:id', async function(req, res, next) {
+  const userId = req.params.id;
 
-  if (indice === -1) {
-    return res.status(404).json({ message: 'Usuario no encontrado' });
+  // Verificar si el ID es un ObjectId válido
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: 'ID inválido' });
   }
 
-  usuarios.splice(indice, 1); // Eliminar usuario de la lista
-  res.json({ message: 'Usuario eliminado' });
+  try {
+    // Eliminar el usuario de la base de datos usando el ObjectId
+    const usuario = await User.findByIdAndDelete(userId);
+
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    res.json({ message: 'Usuario eliminado' });
+  } catch (e) {
+    debug('DB problem', e);
+    res.sendStatus(500);
+  }
 });
 
 module.exports = router;
