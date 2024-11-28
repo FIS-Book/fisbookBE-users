@@ -6,6 +6,18 @@ var mongoose = require('mongoose');
 var User = require('../models/user');
 var debug = require('debug')('users-2:server');
 
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Obtiene una lista de todos los usuarios.
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios.
+ *       500:
+ *         description: Error en el servidor.
+ */
+
 /* GET users listing. */
 router.get('/', async function(req, res, next) {
   // control de errores
@@ -17,6 +29,27 @@ router.get('/', async function(req, res, next) {
     res.sendStatus(500);
   }
 });
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Obtiene un usuario por su ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Detalles del usuario.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
 
 /* GET /users/:id - Obtener un usuario por ID */
 router.get('/:id', async function(req, res, next) {
@@ -34,6 +67,38 @@ router.get('/:id', async function(req, res, next) {
     res.sendStatus(500);
   }
 });
+
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Crea un nuevo usuario.
+ *     description: Crea un nuevo usuario con los datos proporcionados en el cuerpo de la solicitud.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 description: Nombre del usuario.
+ *               email:
+ *                 type: string
+ *                 description: Correo electrónico del usuario.
+ *               plan:
+ *                 type: string
+ *                 description: Plan del usuario.
+ *               tipo:
+ *                 type: string
+ *                 description: Tipo de usuario.
+ *     responses:
+ *       201:
+ *         description: Usuario creado con éxito.
+ *       500:
+ *         description: Error en el servidor.
+ */
 
 /* POST /users - Crear un nuevo usuario */
 router.post('/', async function(req, res, next) {
@@ -54,6 +119,49 @@ router.post('/', async function(req, res, next) {
     res.sendStatus(500);
   }
 });
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Actualiza los datos de un usuario.
+ *     description: Actualiza los datos del usuario identificado por el ID proporcionado.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario a actualizar.
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 description: Nombre del usuario.
+ *               email:
+ *                 type: string
+ *                 description: Correo electrónico del usuario.
+ *               plan:
+ *                 type: string
+ *                 description: Plan del usuario.
+ *               tipo:
+ *                 type: string
+ *                 description: Tipo de usuario.
+ *     responses:
+ *       200:
+ *         description: Usuario actualizado exitosamente.
+ *       400:
+ *         description: ID inválido.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
 
 /* PUT /users/:id - Actualizar un usuario */
 router.put('/:id', async function(req, res, next) {
@@ -80,6 +188,30 @@ router.put('/:id', async function(req, res, next) {
     res.sendStatus(500);
   }
 });
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Elimina un usuario por su ID.
+ *     description: Elimina el usuario identificado por el ID proporcionado.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario a eliminar.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado exitosamente.
+ *       400:
+ *         description: ID inválido.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
 
 /* DELETE /users/:id - Eliminar un usuario */
 router.delete('/:id', async function(req, res, next) {
