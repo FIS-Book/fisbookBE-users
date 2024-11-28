@@ -2,6 +2,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+require('dotenv').config(); // Cargar variables de entorno
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -17,14 +18,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-// setup connection to mongo
+// Conexión a MongoDB
 const mongoose = require('mongoose');
-const DB_URL = (process.env.DB_URL || 'mongodb://localhost/test')
+const uri = process.env.MONGO_URI;
 
-mongoose.connect(DB_URL);
-const db = mongoose.connection;
+mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log('✅ Conexión exitosa a MongoDB Atlas'))
+.catch(err => console.error('❌ Error al conectar a MongoDB Atlas:', err));
 
-// recover form errors
-db.on('error', console.error.bind(console, 'db connection error'));
-
+// Exportar la app
 module.exports = app;
+
