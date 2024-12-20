@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 // BD 
 var User = require('../models/user');
 var debug = require('debug')('users-2:server');
+var passport = require('passport');
 
 /**
  * @swagger
@@ -52,7 +53,7 @@ router.get('/', async function(req, res, next) {
  */
 
 /* GET /users/:id - Obtener un usuario por ID */
-router.get('/:id', async function(req, res, next) {
+router.get('/:id', passport.authenticate['bearer', {session: false}], async function(req, res, next) {
   const id = req.params.id; // Obtener el ID de la URL
   try {
     const usuario = await User.findById(id); // Buscar el usuario por ID en la base de datos
@@ -101,7 +102,7 @@ router.get('/:id', async function(req, res, next) {
  */
 
 /* POST /users - Crear un nuevo usuario */
-router.post('/', async function(req, res, next) {
+router.post('/', passport.authenticate['bearer', {session: false}],async function(req, res, next) {
   const {nombre, email, plan, tipo} = req.body;
 
   const user = new User({
@@ -164,7 +165,7 @@ router.post('/', async function(req, res, next) {
  */
 
 /* PUT /users/:id - Actualizar un usuario */
-router.put('/:id', async function(req, res, next) {
+router.put('/:id',passport.authenticate['bearer', {session: false}], async function(req, res, next) {
   const id = req.params.id; // Obtener el ID de la URL
   const { nombre, email, plan, tipo } = req.body; // Obtener los datos a actualizar
 
@@ -214,7 +215,7 @@ router.put('/:id', async function(req, res, next) {
  */
 
 /* DELETE /users/:id - Eliminar un usuario */
-router.delete('/:id', async function(req, res, next) {
+router.delete('/:id', passport.authenticate['bearer', {session: false}], async function(req, res, next) {
   const userId = req.params.id;
 
   // Verificar si el ID es un ObjectId válido

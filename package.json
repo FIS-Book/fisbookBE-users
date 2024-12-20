@@ -12,7 +12,10 @@
     "express": "^4.21.1",
     "mongoose": "^8.8.3",
     "morgan": "~1.9.1",
+    "passport": "^0.7.0",
+    "passport-http-bearer": "^1.0.1",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "wid": "^0.0.9"
   }
 }
