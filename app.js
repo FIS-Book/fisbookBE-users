@@ -2,7 +2,6 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const passport = require('./passport');
 
 require('dotenv').config(); // Cargar variables de entorno
 const swaggerUi = require('swagger-ui-express');
@@ -19,22 +18,23 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(passport.initialize());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // Conexión a MongoDB
 const mongoose = require('mongoose');
-const uri = process.env.MONGO_URI;
 
+// Aquí defines la URI de tu base de datos directamente en el código
+const uri = 'mongodb+srv://kristinalacasta:Xqc7vQ5IX7jCLUys@cluster0.hywhz.mongodb.net/mi_base_de_datos';
+
+// Establece la conexión con MongoDB Atlas
 mongoose.connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
 .then(() => console.log('✅ Conexión exitosa a MongoDB Atlas'))
 .catch(err => console.error('❌ Error al conectar a MongoDB Atlas:', err));
-
 
 // Configuración de Swagger
 const swaggerOptions = {
