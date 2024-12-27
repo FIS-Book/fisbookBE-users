@@ -35,11 +35,16 @@ El microservicio expone las siguientes APIs REST para interactuar con los datos 
 - **Cuerpo de la solicitud:**
   ```json
   {
-    "nombre": "string",
-    "email": "string",
-    "plan": "string",
-    "tipo": "string"
-  }
+        "id": "string",
+        "nombre": "string",
+        "apellidos": "string",
+        "email": "string",
+        "plan": "string",
+        "tipo": "string",
+        "listaLecturasId": ["string"],
+        "numDescargas": 0,
+        "resenasId": ["string"]
+      }
   ```
 - **Respuestas:**
   - **201:** Usuario creado con éxito.
@@ -65,11 +70,16 @@ El microservicio expone las siguientes APIs REST para interactuar con los datos 
 - **Cuerpo de la solicitud:**
   ```json
   {
-    "nombre": "string",
-    "email": "string",
-    "plan": "string",
-    "tipo": "string"
-  }
+        "id": "string",
+        "nombre": "string",
+        "apellidos": "string",
+        "email": "string",
+        "plan": "string",
+        "tipo": "string",
+        "listaLecturasId": ["string"],
+        "numDescargas": 0,
+        "resenasId": ["string"]
+      }
   ```
 - **Respuestas:**
   - **200:** Usuario actualizado exitosamente.
