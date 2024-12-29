@@ -8,7 +8,7 @@ var debug = require('debug')('users-2:server');
 
 /**
  * @swagger
- * /users:
+ * api-v1/users:
  *   get:
  *     summary: Obtiene una lista de todos los usuarios.
  *     responses:
@@ -32,7 +32,7 @@ router.get('/', async function(req, res, next) {
 
 /**
  * @swagger
- * /users/{id}:
+ * api-v1/users/{id}:
  *   get:
  *     summary: Obtiene un usuario por su ID.
  *     parameters:
@@ -70,7 +70,7 @@ router.get('/:id', async function(req, res, next) {
 
 /**
  * @swagger
- * /users:
+ * api-v1/users:
  *   post:
  *     summary: Crea un nuevo usuario.
  *     description: Crea un nuevo usuario con los datos proporcionados en el cuerpo de la solicitud.
@@ -124,7 +124,7 @@ router.post('/', async function(req, res, next) {
 
 /**
  * @swagger
- * /users/{id}:
+ * api-v1/users/{id}:
  *   put:
  *     summary: Actualiza los datos de un usuario.
  *     description: Actualiza los datos del usuario identificado por el ID proporcionado.
@@ -195,7 +195,7 @@ router.put('/:id', async function(req, res, next) {
 
 /**
  * @swagger
- * /users/{id}:
+ * api-v1/users/{id}:
  *   delete:
  *     summary: Elimina un usuario por su ID.
  *     description: Elimina el usuario identificado por el ID proporcionado.
