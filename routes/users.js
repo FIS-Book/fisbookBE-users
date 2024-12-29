@@ -8,7 +8,7 @@ var debug = require('debug')('users-2:server');
 
 /**
  * @swagger
- * /users:
+ * api-v1/users:
  *   get:
  *     summary: Obtiene una lista de todos los usuarios.
  *     responses:
@@ -32,7 +32,7 @@ router.get('/', async function(req, res, next) {
 
 /**
  * @swagger
- * /users/{id}:
+ * api-v1/users/{id}:
  *   get:
  *     summary: Obtiene un usuario por su ID.
  *     parameters:
@@ -70,7 +70,7 @@ router.get('/:id', async function(req, res, next) {
 
 /**
  * @swagger
- * /users:
+ * api-v1/users:
  *   post:
  *     summary: Crea un nuevo usuario.
  *     description: Crea un nuevo usuario con los datos proporcionados en el cuerpo de la solicitud.
@@ -90,9 +90,9 @@ router.get('/:id', async function(req, res, next) {
  *               plan:
  *                 type: string
  *                 description: Plan del usuario.
- *               tipo:
+ *               Rol:
  *                 type: string
- *                 description: Tipo de usuario.
+ *                 description: Rol de usuario.
  *     responses:
  *       201:
  *         description: Usuario creado con éxito.
@@ -102,13 +102,15 @@ router.get('/:id', async function(req, res, next) {
 
 /* POST /users - Crear un nuevo usuario */
 router.post('/', async function(req, res, next) {
-  const {nombre, email, plan, tipo} = req.body;
+  const {nombre,apellidos, username, email, plan, rol} = req.body;
 
   const user = new User({
     nombre,
+    apellidos,
+    username,
     email,
     plan,
-    tipo
+    rol
   });
 
   try{
@@ -122,7 +124,7 @@ router.post('/', async function(req, res, next) {
 
 /**
  * @swagger
- * /users/{id}:
+ * api-v1/users/{id}:
  *   put:
  *     summary: Actualiza los datos de un usuario.
  *     description: Actualiza los datos del usuario identificado por el ID proporcionado.
@@ -149,9 +151,9 @@ router.post('/', async function(req, res, next) {
  *               plan:
  *                 type: string
  *                 description: Plan del usuario.
- *               tipo:
+ *               rol:
  *                 type: string
- *                 description: Tipo de usuario.
+ *                 description: Rol de usuario.
  *     responses:
  *       200:
  *         description: Usuario actualizado exitosamente.
@@ -165,24 +167,26 @@ router.post('/', async function(req, res, next) {
 
 /* PUT /users/:id - Actualizar un usuario */
 router.put('/:id', async function(req, res, next) {
-  const id = req.params.id; // Obtener el ID de la URL
-  const { nombre, email, plan, tipo } = req.body; // Obtener los datos a actualizar
-
+  const id = req.params.id;
+  const { nombre, apellidos, username, email, plan, rol } = req.body;
+ 
   try {
-    const usuario = await User.findById(id); // Buscar el usuario por ID en la base de datos
-
+    const usuario = await User.findById(id);
+ 
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
-
+ 
     // Actualizar los datos del usuario
     usuario.nombre = nombre || usuario.nombre;
+    usuario.apellidos = apellidos || usuario.apellidos;
+    usuario.username = username || usuario.username;
     usuario.email = email || usuario.email;
     usuario.plan = plan || usuario.plan;
-    usuario.tipo = tipo || usuario.tipo;
-
-    await usuario.save(); // Guardar los cambios en la base de datos
-    res.json(usuario.cleanup()); // Devolver el usuario actualizado
+    usuario.rol = rol || usuario.rol;
+ 
+    await usuario.save();
+    res.json(usuario.cleanup());
   } catch (e) {
     debug('DB problem', e);
     res.sendStatus(500);
@@ -191,7 +195,7 @@ router.put('/:id', async function(req, res, next) {
 
 /**
  * @swagger
- * /users/{id}:
+ * api-v1/users/{id}:
  *   delete:
  *     summary: Elimina un usuario por su ID.
  *     description: Elimina el usuario identificado por el ID proporcionado.
