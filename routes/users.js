@@ -20,7 +20,17 @@ router.get('/pruebaAuth', verifyToken, (req, res) => {
 var User = require('../models/user');
 var debug = require('debug')('users-2:server');
 
-/* GET users listing - Obtener todos los usuarios */
+/**
+ * @swagger
+ * api-v1/users:
+ *   get:
+ *     summary: Obtiene una lista de todos los usuarios.
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios.
+ *       500:
+ *         description: Error en el servidor.
+ */
 router.get('/', verifyToken, async (req, res) => {
   try {
     const result = await User.find();
@@ -31,7 +41,26 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
-/* GET /users/:id - Obtener un usuario por ID */
+/**
+ * @swagger
+ * api-v1/users/{id}:
+ *   get:
+ *     summary: Obtiene un usuario por su ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Detalles del usuario.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
 router.get('/:id', verifyToken, async (req, res) => {
   const id = req.params.id;
   try {
@@ -46,23 +75,67 @@ router.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
-/* PUT /users/:id - Actualizar un usuario */
+/**
+ * @swagger
+ * api-v1/users/{id}:
+ *   put:
+ *     summary: Actualiza los datos de un usuario.
+ *     description: Actualiza los datos del usuario identificado por el ID proporcionado.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario a actualizar.
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 description: Nombre del usuario.
+ *               email:
+ *                 type: string
+ *                 description: Correo electrónico del usuario.
+ *               plan:
+ *                 type: string
+ *                 description: Plan del usuario.
+ *               rol:
+ *                 type: string
+ *                 description: Rol de usuario.
+ *     responses:
+ *       200:
+ *         description: Usuario actualizado exitosamente.
+ *       400:
+ *         description: ID inválido.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
 router.put('/:id', verifyToken, async (req, res) => {
   const id = req.params.id;
-  const { nombre, email, plan, tipo } = req.body;
-
+  const { nombre, apellidos, username, email, plan, rol } = req.body;
+ 
   try {
     const usuario = await User.findById(id);
+ 
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
-
-    // Actualizar los datos
+ 
+    // Actualizar los datos del usuario
     usuario.nombre = nombre || usuario.nombre;
+    usuario.apellidos = apellidos || usuario.apellidos;
+    usuario.username = username || usuario.username;
     usuario.email = email || usuario.email;
     usuario.plan = plan || usuario.plan;
-    usuario.tipo = tipo || usuario.tipo;
-
+    usuario.rol = rol || usuario.rol;
+ 
     await usuario.save();
     res.json(usuario.cleanup());
   } catch (e) {
@@ -71,7 +144,29 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 });
 
-/* DELETE /users/:id - Eliminar un usuario */
+/**
+ * @swagger
+ * api-v1/users/{id}:
+ *   delete:
+ *     summary: Elimina un usuario por su ID.
+ *     description: Elimina el usuario identificado por el ID proporcionado.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del usuario a eliminar.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado exitosamente.
+ *       400:
+ *         description: ID inválido.
+ *       404:
+ *         description: Usuario no encontrado.
+ *       500:
+ *         description: Error en el servidor.
+ */
 router.delete('/:id', verifyToken, async (req, res) => {
   const userId = req.params.id;
 
@@ -94,10 +189,10 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
 // Ruta de registro
 router.post('/register', async (req, res) => {
-  const { nombre, apellidos, email, password, plan, tipo } = req.body;
+  const { nombre, apellidos, username, password, email, plan, rol} = req.body;
 
   try {
-    const user = new User({ nombre, apellidos, email, password, plan, tipo });
+    const user = new User({ nombre, apellidos, username, email, password, plan, rol });
     await user.save();
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
   } catch (err) {
