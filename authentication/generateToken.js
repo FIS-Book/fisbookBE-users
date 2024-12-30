@@ -3,14 +3,24 @@ const dotenv = require('dotenv');
 
 dotenv.config(); // Cargar variables de entorno
 
-// Simulamos un usuario
-const user = {
-  id: 1,
-  email: 'test@example.com',
-  roles: ['user', 'admin'] // roles para la prueba
+const generateToken = (user) => {
+  // Generamos un token JWT
+  try {
+    const plainUser = {
+      _id: user._id.toString(), // Convertir ObjectId a string
+      nombre: user.nombre,
+      email: user.email,
+      plan: user.plan,
+      tipo: user.tipo,
+    };
+    const token = jwt.sign(plainUser, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return token;
+  } catch (e) {
+    console.error('Error al generar token:', e.message, e.stack);
+    return null;
+  }
+  
 };
 
-// Generamos un token JWT
-const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
+module.exports = generateToken;
 
-console.log('Token generado:', token);

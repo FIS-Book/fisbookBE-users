@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 // Autenticación
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../authentication/auth'); // Middleware de verificación de token
+const generateToken = require('../authentication/generateToken'); // Función para generar token
 // const validateRole = require('../authentication/roleValidator'); // Opcional
 
 // Ruta de prueba para autenticación
@@ -40,25 +41,6 @@ router.get('/:id', verifyToken, async (req, res) => {
     }
     res.json(usuario.cleanup());
   } catch (e) {
-    debug('DB problem', e);
-    res.sendStatus(500);
-  }
-});
-
-/* POST /users - Crear un nuevo usuario */
-router.post('/', verifyToken, async (req, res) => {
-  const { nombre, email, plan, tipo } = req.body;
-  const user = new User({
-    nombre,
-    email,
-    plan,
-    tipo
-  });
-
-  try {
-    await user.save();
-    return res.sendStatus(201);
-  } catch(e) {
     debug('DB problem', e);
     res.sendStatus(500);
   }
@@ -131,12 +113,8 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email, password });
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
-
-    // Validar contraseña
-    const isValid = await user.isValidPassword(password);
-    if (!isValid) return res.status(401).json({ message: 'Contraseña incorrecta' });
 
     // Generar el token JWT
     const token = generateToken(user);

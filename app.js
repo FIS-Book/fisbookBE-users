@@ -26,7 +26,7 @@ app.use('/users', usersRouter);
 const mongoose = require('mongoose');
 
 // Aquí defines la URI de tu base de datos directamente en el código
-const uri = 'mongodb+srv://kristinalacasta:Xqc7vQ5IX7jCLUys@cluster0.hywhz.mongodb.net/mi_base_de_datos';
+const uri = 'mongodb+srv://kristinalacasta:Sf5FkZ6GkDbN2E5B@cluster0.hywhz.mongodb.net/mi_base_de_datos?retryWrites=true&w=majority&appName=user_app';
 
 // Establece la conexión con MongoDB Atlas
 mongoose.connect(uri, {
