@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
+const axios = require('axios'); // Para hacer solicitudes HTTP
 
 // Autenticación
 const jwt = require('jsonwebtoken');
@@ -30,7 +31,6 @@ router.get('/healthz', (req, res) => {
 */
 res.sendStatus(200);
 });
-
 
 /**
  * @swagger
@@ -328,7 +328,7 @@ router.post('/login', async (req, res) => {
  *             required:
  *               - downloadCount
  *             properties:
- *               downloadCount:
+ *               numDescargas:
  *                 type: integer
  *                 description: Nuevo número de descargas del usuario.
  *                 example: 100
@@ -350,7 +350,7 @@ router.post('/login', async (req, res) => {
  *                     _id:
  *                       type: string
  *                       example: "609c1f77bcf86cd799439011"
- *                     downloadCount:
+ *                     numDescargas:
  *                       type: integer
  *                       example: 100
  *       400:
@@ -360,20 +360,20 @@ router.post('/login', async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.patch('/:userId/downloads', verifyToken, async (req, res) => { 
+router.patch('/:username/downloads', verifyToken, async (req, res) => { 
   try {
-    const { userId } = req.params;
-    const { downloadCount } = req.body;
+    const { username } = req.params;
+    const { numDescargas } = req.body;
 
     // Validar si downloadCount está definido
-    if (typeof downloadCount === 'undefined') {
+    if (typeof numDescargas === 'undefined') {
       return res.status(400).json({ error: "'downloadCount' is required." });
     }
 
     // Actualizar el número de descargas del usuario
     const updatedUser = await User.findOneAndUpdate(
-      { _id: userId },
-      { $set: { downloadCount } },
+      { username: username },
+      { $set: { numDescargas } },
       { new: true, runValidators: true }
     );
 
@@ -397,5 +397,107 @@ router.patch('/:userId/downloads', verifyToken, async (req, res) => {
   }
 });
 
+
+/**
+ * @swagger
+ * /api-v1/users/{userId}/readings:
+ *   get:
+ *     summary: Obtiene las listas de lectura de un usuario.
+ *     description: Permite obtener las listas de lecturas de un usuario dado su `userId`.
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: ID del usuario cuyas listas de lecturas se desean obtener.
+ *         schema:
+ *           type: string
+ *           example: "00000000001"
+ *     responses:
+ *       200:
+ *         description: Se han obtenido las listas de lecturas del usuario exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Mensaje de éxito.
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: ID del usuario.
+ *                     nombre:
+ *                       type: string
+ *                       description: Nombre del usuario.
+ *                     apellidos:
+ *                       type: string
+ *                       description: Apellidos del usuario.
+ *                     listaLecturasId:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Lista de IDs de las listas de lectura asociadas al usuario.
+ *                 readings:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: ID de la lista de lectura.
+ *                       name:
+ *                         type: string
+ *                         description: Nombre de la lista de lectura.
+ *                       description:
+ *                         type: string
+ *                         description: Descripción de la lista de lectura.
+ *       400:
+ *         description: Error en la solicitud, parámetros inválidos.
+ *       404:
+ *         description: No se encontraron listas de lecturas para el usuario.
+ *       500:
+ *         description: Error inesperado del servidor.
+ */
+const MS_READING_URL = process.env.MS_READING_URL;
+ 
+router.get('/:id/readings', async (req, res) => {
+  const { id } = req.params;
+ 
+  // Validar que el id del usuario es válido
+  if (!id || typeof id !== 'string') {
+    return res.status(400).json({ message: 'ID de usuario inválido.' });
+  }
+ 
+  try {
+    // Hacer la solicitud al microservicio de lecturas
+    const response = await axios.get(MS_READING_URL, {  
+      params: { id } // Pasar el userId como parámetro
+    });
+ 
+    // Si hay lecturas, devolverlas en la respuesta
+    if (response.data && response.data.length > 0) {
+      // Actualizar el atributo listalecturaId con los ids de las lecturas
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        { $set: { listalecturaId: response.data.map(lectura => lectura.id) } },
+        { new: true }
+      );
+ 
+      return res.status(200).json({
+        message: 'Listas de lectura obtenidas y actualizadas con éxito.',
+        user: updatedUser,
+        readings: response.data
+      });
+    } else {
+      return res.status(404).json({ message: 'No se encontraron lecturas para este usuario.' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error inesperado en el servidor.', error: error.message });
+  }
+});
 
 module.exports = router;
