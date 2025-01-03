@@ -20,7 +20,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/api-v1/users', usersRouter);
+app.use('/api/v1/users', usersRouter);
 
 // Conexión a MongoDB
 const mongoose = require('mongoose');
@@ -53,7 +53,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 // Usar swagger-ui-express para mostrar la documentación interactiva
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/MS_USERS/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Exportar la app
 module.exports = app;

@@ -7,7 +7,12 @@ const axios = require('axios'); // Para hacer solicitudes HTTP
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../authentication/auth'); // Middleware de verificación de token
 const generateToken = require('../authentication/generateToken'); // Función para generar token
-// const validateRole = require('../authentication/roleValidator'); // Opcional
+
+// Comunicación con otros microservicios:
+const MS_READING_URL = process.env.MS_READING_URL;
+const MS_REVIEWS_URL = process.env.MS_REVIEWS_URL; // URL base del microservicio de reseñas
+
+
 
 // Ruta de prueba para autenticación
 router.get('/pruebaAuth', verifyToken, (req, res) => {
@@ -55,7 +60,7 @@ router.get('/', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api-v1/users/{id}:
+ * api/v1/users/{id}:
  *   get:
  *     summary: Obtiene un usuario por su ID.
  *     parameters:
@@ -89,7 +94,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api-v1/users/{id}:
+ * api/v1/users/{id}:
  *   put:
  *     summary: Actualiza los datos de un usuario.
  *     description: Actualiza los datos del usuario identificado por el ID proporcionado.
@@ -158,7 +163,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api-v1/users/{id}:
+ * api/v1/users/{id}:
  *   delete:
  *     summary: Elimina un usuario por su ID.
  *     description: Elimina el usuario identificado por el ID proporcionado.
@@ -201,7 +206,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * /api-v1/users/register:
+ * api/v1/users/register:
  *   post:
  *     summary: Registra un nuevo usuario.
  *     description: Crea un nuevo usuario en la base de datos con los datos proporcionados.
@@ -247,7 +252,7 @@ router.post('/register', async (req, res) => {
 
 /**
  * @swagger
- * /api-v1/users/login:
+ * api/v1/users/login:
  *   post:
  *     summary: Inicia sesión en el sistema.
  *     description: Permite a un usuario autenticarse con su email y contraseña, y devuelve un token JWT.
@@ -305,9 +310,114 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
 /**
  * @swagger
- * /api-v1/users/{userId}/downloads:
+ * /api/v1/users:
+ *   post:
+ *     summary: Crea un nuevo usuario y su lista de lecturas inicial.
+ *     description: Al dar de alta un usuario, se crea automáticamente una lista de lecturas vacía asociada al usuario en el microservicio de lecturas.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               apellidos:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               plan:
+ *                 type: string
+ *                 enum: ['Plan1', 'Plan2', 'Plan3']
+ *               rol:
+ *                 type: string
+ *                 enum: ['Admin', 'User']
+ *             required:
+ *               - nombre
+ *               - apellidos
+ *               - username
+ *               - email
+ *               - password
+ *               - plan
+ *               - rol
+ *     responses:
+ *       201:
+ *         description: Usuario creado exitosamente junto con su lista de lecturas inicial.
+ *       400:
+ *         description: Error en los datos enviados.
+ *       500:
+ *         description: Error inesperado del servidor.
+ */
+
+router.post('/users', async (req, res) => {
+  const {
+    nombre,
+    apellidos,
+    username,
+    email,
+    password,
+    plan,
+    rol,
+  } = req.body;
+
+  // Validación básica de datos
+  if (!nombre || !apellidos || !username || !email || !password || !plan || !rol) {
+    return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
+  }
+
+  try {
+    // 1. Crear el usuario en la base de datos
+    const newUser = new User({
+      nombre,
+      apellidos,
+      username,
+      email,
+      password, // Considerar encriptar la contraseña aquí.
+      plan,
+      rol,
+    });
+
+    await newUser.save();
+
+    // 2. Llamar al microservicio READINGS para crear la lista de lecturas inicial
+    const response = await axios.post(`${MS_READINGS_URL}/api/v1/readings/${newUser._id}`);
+
+    // Verificar si la respuesta del microservicio fue exitosa
+    if (response.status !== 201) {
+      // Si la llamada falla, eliminar al usuario creado para evitar inconsistencias
+      await User.findByIdAndDelete(newUser._id);
+      return res.status(500).json({
+        message: 'Error al crear la lista de lecturas inicial. El usuario no fue registrado.',
+      });
+    }
+
+    return res.status(201).json({
+      message: 'Usuario creado exitosamente junto con su lista de lecturas inicial.',
+      user: newUser.cleanup(),
+    });
+  } catch (error) {
+    console.error(error);
+
+    // Manejo de errores del servidor
+    return res.status(500).json({
+      message: 'Error inesperado en el servidor.',
+      error: error.message,
+    });
+  }
+});
+
+
+/**
+ * @swagger
+ *api/v1/users/{userId}/downloads:
  *   patch:
  *     summary: Actualiza el número de descargas de un usuario.
  *     description: Permite a un administrador o al propio usuario actualizar la cantidad de descargas asociadas a un usuario.
@@ -400,7 +510,7 @@ router.patch('/:username/downloads', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * /api-v1/users/{userId}/readings:
+ * api/v1/users/{userId}/readings:
  *   get:
  *     summary: Obtiene las listas de lectura de un usuario.
  *     description: Permite obtener las listas de lecturas de un usuario dado su `userId`.
@@ -461,7 +571,7 @@ router.patch('/:username/downloads', verifyToken, async (req, res) => {
  *       500:
  *         description: Error inesperado del servidor.
  */
-const MS_READING_URL = process.env.MS_READING_URL;
+
  
 router.get('/:id/readings', async (req, res) => {
   const { id } = req.params;
@@ -499,5 +609,136 @@ router.get('/:id/readings', async (req, res) => {
     return res.status(500).json({ message: 'Error inesperado en el servidor.', error: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /api/v1/reviews/user/{userId}/book:
+ *   get:
+ *     summary: Obtiene las reseñas de un usuario para un libro.
+ *     description: Permite obtener todas las reseñas que un usuario ha realizado para libros específicos.
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: El ID del usuario cuyas reseñas se desean consultar.
+ *         schema:
+ *           type: string
+ *           example: "00000000001"
+ *     responses:
+ *       200:
+ *         description: Reseñas del usuario para libros obtenidas exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   bookId:
+ *                     type: string
+ *                     description: ID del libro.
+ *                   review:
+ *                     type: string
+ *                     description: Contenido de la reseña.
+ *                   rating:
+ *                     type: number
+ *                     description: Calificación dada al libro.
+ *       400:
+ *         description: Parámetros inválidos en la solicitud.
+ *       404:
+ *         description: No se encontraron reseñas para este usuario.
+ *       500:
+ *         description: Error inesperado en el servidor.
+ */
+
+router.get('/reviews/user/:userId/book', async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ message: 'El parámetro userId es obligatorio.' });
+  }
+
+  try {
+    const response = await axios.get(`${MS_REVIEWS_URL}/users/${userId}/bk`);
+
+    if (!response.data || response.data.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron reseñas para este usuario.' });
+    }
+
+    return res.status(200).json({
+      message: 'Reseñas del usuario para libros obtenidas exitosamente.',
+      reviews: response.data,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error inesperado en el servidor.', error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/reviews/user/{userId}/reading-list:
+ *   get:
+ *     summary: Obtiene las reseñas de un usuario para una lista de lectura.
+ *     description: Permite obtener todas las reseñas que un usuario ha realizado para una lista de lectura específica.
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: El ID del usuario cuyas reseñas se desean consultar.
+ *         schema:
+ *           type: string
+ *           example: "00000000001"
+ *     responses:
+ *       200:
+ *         description: Reseñas del usuario para listas de lectura obtenidas exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   listId:
+ *                     type: string
+ *                     description: ID de la lista de lectura.
+ *                   review:
+ *                     type: string
+ *                     description: Contenido de la reseña.
+ *                   rating:
+ *                     type: number
+ *                     description: Calificación dada a la lista de lectura.
+ *       400:
+ *         description: Parámetros inválidos en la solicitud.
+ *       404:
+ *         description: No se encontraron reseñas para este usuario.
+ *       500:
+ *         description: Error inesperado en el servidor.
+ */
+
+router.get('/reviews/user/:userId/reading-list', async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ message: 'El parámetro userId es obligatorio.' });
+  }
+
+  try {
+    const response = await axios.get(`${MS_REVIEWS_URL}/users/${userId}/rl`);
+
+    if (!response.data || response.data.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron reseñas para este usuario.' });
+    }
+
+    return res.status(200).json({
+      message: 'Reseñas del usuario para listas de lectura obtenidas exitosamente.',
+      reviews: response.data,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error inesperado en el servidor.', error: error.message });
+  }
+});
+
 
 module.exports = router;
