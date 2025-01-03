@@ -10,6 +10,9 @@ const swaggerJsdoc = require('swagger-jsdoc');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
+const dotenv = require('dotenv');
+dotenv.config();
+
 var app = express();
 
 
@@ -25,8 +28,13 @@ app.use('/api/v1/auth', usersRouter);
 // Conexión a MongoDB
 const mongoose = require('mongoose');
 
-// Aquí defines la URI de tu base de datos directamente en el código
-const uri = 'mongodb+srv://kristinalacasta:Sf5FkZ6GkDbN2E5B@cluster0.hywhz.mongodb.net/mi_base_de_datos?retryWrites=true&w=majority&appName=user_app';
+// Obtén la URI desde las variables de entorno
+const uri = process.env.MONGO_URI_USERS;
+
+if (!uri) {
+    console.error('❌ Error: La variable de entorno MONGO_URI_USERS no está definida.');
+    process.exit(1); // Salir del proceso si no se encuentra la URI
+}
 
 // Establece la conexión con MongoDB Atlas
 mongoose.connect(uri, {
