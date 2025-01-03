@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
 
-// BD 
+// BD
 var User = require('../models/user');
 var debug = require('debug')('users-2:server');
 
@@ -20,11 +20,10 @@ var debug = require('debug')('users-2:server');
 
 /* GET users listing. */
 router.get('/', async function(req, res, next) {
-  // control de errores
-  try{
-    const result = await User.find(); // llamada asíncrona
-    res.send(result.map((c) => c.cleanup())); // limpieza de atributos que se devuelven
-  } catch(e) {
+  try {
+    const result = await User.find(); // Llamada asíncrona
+    res.send(result.map((c) => c.cleanup())); // Limpieza de atributos que se devuelven
+  } catch (e) {
     debug('DB problem', e);
     res.sendStatus(500);
   }
@@ -53,9 +52,9 @@ router.get('/', async function(req, res, next) {
 
 /* GET /users/:id - Obtener un usuario por ID */
 router.get('/:id', async function(req, res, next) {
-  const id = req.params.id; // Obtener el ID de la URL
+  const id = req.params.id;
   try {
-    const usuario = await User.findById(id); // Buscar el usuario por ID en la base de datos
+    const usuario = await User.findById(id);
 
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -84,37 +83,47 @@ router.get('/:id', async function(req, res, next) {
  *               nombre:
  *                 type: string
  *                 description: Nombre del usuario.
+ *               apellidos:
+ *                 type: string
+ *                 description: Apellidos del usuario.
+ *               username:
+ *                 type: string
+ *                 description: Nombre de usuario.
  *               email:
  *                 type: string
  *                 description: Correo electrónico del usuario.
  *               plan:
  *                 type: string
- *                 description: Plan del usuario.
+ *                 description: Plan del usuario (Activo o No activo).
  *               tipo:
  *                 type: string
- *                 description: Tipo de usuario.
+ *                 description: Tipo de usuario (Admin o User).
  *     responses:
  *       201:
  *         description: Usuario creado con éxito.
+ *       400:
+ *         description: Error en los datos de entrada.
  *       500:
  *         description: Error en el servidor.
  */
 
 /* POST /users - Crear un nuevo usuario */
 router.post('/', async function(req, res, next) {
-  const {nombre, email, plan, tipo} = req.body;
+  const { nombre, apellidos, username, email, plan, tipo } = req.body;
 
   const user = new User({
     nombre,
+    apellidos,
+    username,
     email,
     plan,
     tipo
   });
 
-  try{
+  try {
     await user.save();
-    return res.sendStatus(201);
-  } catch(e) {
+    return res.status(201).json(user.cleanup());
+  } catch (e) {
     debug('DB problem', e);
     res.sendStatus(500);
   }
@@ -143,15 +152,21 @@ router.post('/', async function(req, res, next) {
  *               nombre:
  *                 type: string
  *                 description: Nombre del usuario.
+ *               apellidos:
+ *                 type: string
+ *                 description: Apellidos del usuario.
+ *               username:
+ *                 type: string
+ *                 description: Nombre de usuario.
  *               email:
  *                 type: string
  *                 description: Correo electrónico del usuario.
  *               plan:
  *                 type: string
- *                 description: Plan del usuario.
+ *                 description: Plan del usuario (Activo o No activo).
  *               tipo:
  *                 type: string
- *                 description: Tipo de usuario.
+ *                 description: Tipo de usuario (Admin o User).
  *     responses:
  *       200:
  *         description: Usuario actualizado exitosamente.
@@ -165,11 +180,11 @@ router.post('/', async function(req, res, next) {
 
 /* PUT /users/:id - Actualizar un usuario */
 router.put('/:id', async function(req, res, next) {
-  const id = req.params.id; // Obtener el ID de la URL
-  const { nombre, email, plan, tipo } = req.body; // Obtener los datos a actualizar
+  const id = req.params.id;
+  const { nombre, apellidos, username, email, plan, tipo } = req.body;
 
   try {
-    const usuario = await User.findById(id); // Buscar el usuario por ID en la base de datos
+    const usuario = await User.findById(id);
 
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -177,12 +192,14 @@ router.put('/:id', async function(req, res, next) {
 
     // Actualizar los datos del usuario
     usuario.nombre = nombre || usuario.nombre;
+    usuario.apellidos = apellidos || usuario.apellidos;
+    usuario.username = username || usuario.username;
     usuario.email = email || usuario.email;
     usuario.plan = plan || usuario.plan;
     usuario.tipo = tipo || usuario.tipo;
 
-    await usuario.save(); // Guardar los cambios en la base de datos
-    res.json(usuario.cleanup()); // Devolver el usuario actualizado
+    await usuario.save();
+    res.json(usuario.cleanup());
   } catch (e) {
     debug('DB problem', e);
     res.sendStatus(500);
@@ -223,7 +240,6 @@ router.delete('/:id', async function(req, res, next) {
   }
 
   try {
-    // Eliminar el usuario de la base de datos usando el ObjectId
     const usuario = await User.findByIdAndDelete(userId);
 
     if (!usuario) {
@@ -238,5 +254,3 @@ router.delete('/:id', async function(req, res, next) {
 });
 
 module.exports = router;
-
-
