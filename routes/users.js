@@ -39,7 +39,7 @@ res.sendStatus(200);
 
 /**
  * @swagger
- * api-v1/users:
+ * api/v1/auth/users:
  *   get:
  *     summary: Obtiene una lista de todos los usuarios.
  *     responses:
@@ -48,7 +48,7 @@ res.sendStatus(200);
  *       500:
  *         description: Error en el servidor.
  */
-router.get('/', verifyToken, async (req, res) => {
+router.get('/users/', verifyToken, async (req, res) => {
   try {
     const result = await User.find();
     res.send(result.map((c) => c.cleanup())); // Limpiar atributos
@@ -60,7 +60,7 @@ router.get('/', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/users/{id}:
+ * api/v1/auth/users/{id}:
  *   get:
  *     summary: Obtiene un usuario por su ID.
  *     parameters:
@@ -78,7 +78,7 @@ router.get('/', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.get('/:id', verifyToken, async (req, res) => {
+router.get('/users/:id', verifyToken, async (req, res) => {
   const id = req.params.id;
   try {
     const usuario = await User.findById(id);
@@ -94,7 +94,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/users/{id}:
+ * api/v1/auth/users/{id}:
  *   put:
  *     summary: Actualiza los datos de un usuario.
  *     description: Actualiza los datos del usuario identificado por el ID proporcionado.
@@ -134,7 +134,7 @@ router.get('/:id', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.put('/:id', verifyToken, async (req, res) => {
+router.put('/users/:id', verifyToken, async (req, res) => {
   const id = req.params.id;
   const { nombre, apellidos, username, email, plan, rol } = req.body;
  
@@ -163,7 +163,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/users/{id}:
+ * api/v1/auth/users/{id}:
  *   delete:
  *     summary: Elimina un usuario por su ID.
  *     description: Elimina el usuario identificado por el ID proporcionado.
@@ -184,7 +184,7 @@ router.put('/:id', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/users/:id', verifyToken, async (req, res) => {
   const userId = req.params.id;
 
   // Verificar si el ID es válido
@@ -206,7 +206,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/users/register:
+ * api/v1/auth/users/register:
  *   post:
  *     summary: Registra un nuevo usuario.
  *     description: Crea un nuevo usuario en la base de datos con los datos proporcionados.
@@ -234,7 +234,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.post('/register', async (req, res) => {
+router.post('/users/register', async (req, res) => {
   const { nombre, apellidos, username, password, email, plan, rol} = req.body;
 
   try {
@@ -252,7 +252,7 @@ router.post('/register', async (req, res) => {
 
 /**
  * @swagger
- * api/v1/users/login:
+ * api/v1/auth/users/login:
  *   post:
  *     summary: Inicia sesión en el sistema.
  *     description: Permite a un usuario autenticarse con su email y contraseña, y devuelve un token JWT.
@@ -294,7 +294,7 @@ router.post('/register', async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.post('/login', async (req, res) => {
+router.post('/users/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -313,7 +313,7 @@ router.post('/login', async (req, res) => {
 
 /**
  * @swagger
- * /api/v1/users:
+ * /api/v1/auth/users:
  *   post:
  *     summary: Crea un nuevo usuario y su lista de lecturas inicial.
  *     description: Al dar de alta un usuario, se crea automáticamente una lista de lecturas vacía asociada al usuario en el microservicio de lecturas.
@@ -357,7 +357,7 @@ router.post('/login', async (req, res) => {
  *         description: Error inesperado del servidor.
  */
 
-router.post('/users', async (req, res) => {
+router.post('users/allUsers', async (req, res) => {
   const {
     nombre,
     apellidos,
@@ -417,7 +417,7 @@ router.post('/users', async (req, res) => {
 
 /**
  * @swagger
- *api/v1/users/{userId}/downloads:
+ *api/v1/auth/users/{userId}/downloads:
  *   patch:
  *     summary: Actualiza el número de descargas de un usuario.
  *     description: Permite a un administrador o al propio usuario actualizar la cantidad de descargas asociadas a un usuario.
@@ -470,7 +470,7 @@ router.post('/users', async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.patch('/:username/downloads', verifyToken, async (req, res) => { 
+router.patch('users/:username/downloads', verifyToken, async (req, res) => { 
   try {
     const { username } = req.params;
     const { numDescargas } = req.body;
@@ -510,7 +510,7 @@ router.patch('/:username/downloads', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/users/{userId}/readings:
+ * api/v1/auth/users/{userId}/readings:
  *   get:
  *     summary: Obtiene las listas de lectura de un usuario.
  *     description: Permite obtener las listas de lecturas de un usuario dado su `userId`.
@@ -573,7 +573,7 @@ router.patch('/:username/downloads', verifyToken, async (req, res) => {
  */
 
  
-router.get('/:id/readings', async (req, res) => {
+router.get('/users/:id/readings', async (req, res) => {
   const { id } = req.params;
  
   // Validar que el id del usuario es válido
@@ -612,7 +612,7 @@ router.get('/:id/readings', async (req, res) => {
 
 /**
  * @swagger
- * /api/v1/reviews/user/{userId}/book:
+ * /api/v1/users/reviews/user/{userId}/book:
  *   get:
  *     summary: Obtiene las reseñas de un usuario para un libro.
  *     description: Permite obtener todas las reseñas que un usuario ha realizado para libros específicos.
@@ -651,7 +651,7 @@ router.get('/:id/readings', async (req, res) => {
  *         description: Error inesperado en el servidor.
  */
 
-router.get('/reviews/user/:userId/book', async (req, res) => {
+router.get('/users/reviews/user/:userId/book', async (req, res) => {
   const { userId } = req.params;
 
   if (!userId) {
@@ -677,7 +677,7 @@ router.get('/reviews/user/:userId/book', async (req, res) => {
 
 /**
  * @swagger
- * /api/v1/reviews/user/{userId}/reading-list:
+ * /api/v1/auth/users/reviews/user/{userId}/reading-list:
  *   get:
  *     summary: Obtiene las reseñas de un usuario para una lista de lectura.
  *     description: Permite obtener todas las reseñas que un usuario ha realizado para una lista de lectura específica.
@@ -716,7 +716,7 @@ router.get('/reviews/user/:userId/book', async (req, res) => {
  *         description: Error inesperado en el servidor.
  */
 
-router.get('/reviews/user/:userId/reading-list', async (req, res) => {
+router.get('/users/reviews/user/:userId/reading-list', async (req, res) => {
   const { userId } = req.params;
 
   if (!userId) {
