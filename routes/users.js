@@ -9,18 +9,9 @@ const verifyToken = require('../authentication/auth'); // Middleware de verifica
 const generateToken = require('../authentication/generateToken'); // Función para generar token
 
 // Comunicación con otros microservicios:
-const MS_READING_URL = process.env.MS_READING_URL;
+const MS_READING_LIST_URL = process.env.MS_READING_LIST_URL;
 const MS_REVIEWS_URL = process.env.MS_REVIEWS_URL; // URL base del microservicio de reseñas
 
-
-
-// Ruta de prueba para autenticación
-router.get('/pruebaAuth', verifyToken, (req, res) => {
-  res.status(200).json({
-    message: 'Autenticación exitosa',
-    user: req.user
-  });
-});
 
 // BD
 var User = require('../models/user');
@@ -39,7 +30,7 @@ res.sendStatus(200);
 
 /**
  * @swagger
- * api/v1/auth/users:
+ * /api/v1/auth/users:
  *   get:
  *     summary: Obtiene una lista de todos los usuarios.
  *     responses:
@@ -48,7 +39,7 @@ res.sendStatus(200);
  *       500:
  *         description: Error en el servidor.
  */
-router.get('/users/', verifyToken, async (req, res) => {
+router.get('/users', verifyToken, async (req, res) => {
   try {
     const result = await User.find();
     res.send(result.map((c) => c.cleanup())); // Limpiar atributos
@@ -60,7 +51,7 @@ router.get('/users/', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/auth/users/{id}:
+ * /api/v1/auth/users/{id}:
  *   get:
  *     summary: Obtiene un usuario por su ID.
  *     parameters:
@@ -94,7 +85,7 @@ router.get('/users/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/auth/users/{id}:
+ * /api/v1/auth/users/{id}:
  *   put:
  *     summary: Actualiza los datos de un usuario.
  *     description: Actualiza los datos del usuario identificado por el ID proporcionado.
@@ -163,7 +154,7 @@ router.put('/users/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/auth/users/{id}:
+ * /api/v1/auth/users/{id}:
  *   delete:
  *     summary: Elimina un usuario por su ID.
  *     description: Elimina el usuario identificado por el ID proporcionado.
@@ -206,7 +197,7 @@ router.delete('/users/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/auth/users/register:
+ * /api/v1/auth/users/register:
  *   post:
  *     summary: Registra un nuevo usuario.
  *     description: Crea un nuevo usuario en la base de datos con los datos proporcionados.
@@ -252,7 +243,7 @@ router.post('/users/register', async (req, res) => {
 
 /**
  * @swagger
- * api/v1/auth/users/login:
+ * /api/v1/auth/users/login:
  *   post:
  *     summary: Inicia sesión en el sistema.
  *     description: Permite a un usuario autenticarse con su email y contraseña, y devuelve un token JWT.
@@ -388,7 +379,7 @@ router.post('users/allUsers', async (req, res) => {
     await newUser.save();
 
     // 2. Llamar al microservicio READINGS para crear la lista de lecturas inicial
-    const response = await axios.post(`${MS_READINGS_URL}/api/v1/readings/${newUser._id}`);
+    const response = await axios.post(`${MS_READING_LIST_URL}/api/v1/readings/${newUser._id}`);
 
     // Verificar si la respuesta del microservicio fue exitosa
     if (response.status !== 201) {
@@ -417,7 +408,7 @@ router.post('users/allUsers', async (req, res) => {
 
 /**
  * @swagger
- *api/v1/auth/users/{userId}/downloads:
+ * /api/v1/auth/users/{userId}/downloads:
  *   patch:
  *     summary: Actualiza el número de descargas de un usuario.
  *     description: Permite a un administrador o al propio usuario actualizar la cantidad de descargas asociadas a un usuario.
@@ -510,7 +501,7 @@ router.patch('users/:username/downloads', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api/v1/auth/users/{userId}/readings:
+ * /api/v1/auth/users/{userId}/readings:
  *   get:
  *     summary: Obtiene las listas de lectura de un usuario.
  *     description: Permite obtener las listas de lecturas de un usuario dado su `userId`.
@@ -583,7 +574,7 @@ router.get('/users/:id/readings', async (req, res) => {
  
   try {
     // Hacer la solicitud al microservicio de lecturas
-    const response = await axios.get(MS_READING_URL, {  
+    const response = await axios.get(MS_READING_LIST_URL, {  
       params: { id } // Pasar el userId como parámetro
     });
  
