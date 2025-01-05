@@ -5,7 +5,7 @@ const axios = require('axios'); // Para hacer solicitudes HTTP
 
 // Autenticación
 const jwt = require('jsonwebtoken');
-const verifyToken = require('../authentication/auth'); // Middleware de verificación de token
+const authenticateAndAuthorize = require('../authentication/authenticateAndAuthorize'); // Middleware de verificación de token
 const generateToken = require('../authentication/generateToken'); // Función para generar token
 
 // Comunicación con otros microservicios:
@@ -39,7 +39,7 @@ res.sendStatus(200);
  *       500:
  *         description: Error en el servidor.
  */
-router.get('/users', verifyToken, async (req, res) => {
+router.get('/users', authenticateAndAuthorize(['Admin']), async (req, res) => {
   try {
     const result = await User.find();
     res.send(result.map((c) => c.cleanup())); // Limpiar atributos
@@ -69,7 +69,7 @@ router.get('/users', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.get('/users/:id', verifyToken, async (req, res) => {
+router.get('/users/:id', authenticateAndAuthorize(['User', 'Admin']), async (req, res) => {
   const id = req.params.id;
   try {
     const usuario = await User.findById(id);
@@ -125,7 +125,7 @@ router.get('/users/:id', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.put('/users/:id', verifyToken, async (req, res) => {
+router.put('/users/:id', authenticateAndAuthorize(['User', 'Admin']), async (req, res) => {
   const id = req.params.id;
   const { nombre, apellidos, username, email, plan, rol } = req.body;
  
@@ -175,7 +175,7 @@ router.put('/users/:id', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.delete('/users/:id', verifyToken, async (req, res) => {
+router.delete('/users/:id', authenticateAndAuthorize(['Admin']), async (req, res) => {
   const userId = req.params.id;
 
   // Verificar si el ID es válido
@@ -461,7 +461,7 @@ router.post('users/allUsers', async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.patch('users/:username/downloads', verifyToken, async (req, res) => { 
+router.patch('users/:username/downloads', authenticateAndAuthorize(['User', 'Admin']), async (req, res) => { 
   try {
     const { username } = req.params;
     const { numDescargas } = req.body;
@@ -564,7 +564,7 @@ router.patch('users/:username/downloads', verifyToken, async (req, res) => {
  */
 
  
-router.get('/users/:id/readings', async (req, res) => {
+router.get('/users/:id/readings', authenticateAndAuthorize(['User', 'Admin']), async (req, res) => {
   const { id } = req.params;
  
   // Validar que el id del usuario es válido
@@ -603,7 +603,7 @@ router.get('/users/:id/readings', async (req, res) => {
 
 /**
  * @swagger
- * /api/v1/users/reviews/user/{userId}/book:
+ * /api/v1/auth/users/reviews/user/{userId}/book:
  *   get:
  *     summary: Obtiene las reseñas de un usuario para un libro.
  *     description: Permite obtener todas las reseñas que un usuario ha realizado para libros específicos.
@@ -642,7 +642,7 @@ router.get('/users/:id/readings', async (req, res) => {
  *         description: Error inesperado en el servidor.
  */
 
-router.get('/users/reviews/user/:userId/book', async (req, res) => {
+router.get('/users/reviews/user/:userId/book', authenticateAndAuthorize(['User', 'Admin']), async (req, res) => {
   const { userId } = req.params;
 
   if (!userId) {
@@ -707,7 +707,7 @@ router.get('/users/reviews/user/:userId/book', async (req, res) => {
  *         description: Error inesperado en el servidor.
  */
 
-router.get('/users/reviews/user/:userId/reading-list', async (req, res) => {
+router.get('/users/reviews/user/:userId/reading-list', authenticateAndAuthorize(['User', 'Admin']), async (req, res) => {
   const { userId } = req.params;
 
   if (!userId) {
@@ -730,6 +730,5 @@ router.get('/users/reviews/user/:userId/reading-list', async (req, res) => {
     return res.status(500).json({ message: 'Error inesperado en el servidor.', error: error.message });
   }
 });
-
 
 module.exports = router;
