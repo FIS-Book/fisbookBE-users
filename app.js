@@ -8,7 +8,6 @@ const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
-var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
@@ -35,7 +34,6 @@ app.use(cors(corsOptions));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas
-app.use('/', indexRouter);
 app.use('/api/v1/auth', usersRouter);
 
 // Conexión a MongoDB

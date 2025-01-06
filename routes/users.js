@@ -568,7 +568,7 @@ router.get('/users/reviews/user/:userId/book', verifyToken, async (req, res) => 
  
   try {
     const token = req.headers.authorization.split(' ')[1]; // Token enviado al backend
-    const response = await axios.get(`${BASE_URL}/api/v1/reviews/users/${userId}/bk`, {
+    const response = await axios.get(`${process.env.BASE_URL}/api/v1/reviews/users/${userId}/bk`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
