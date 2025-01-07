@@ -1,13 +1,12 @@
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
-dotenv.config(); // Cargar variables de entorno
+dotenv.config(); 
 
 const generateToken = (user) => {
-  // Generamos un token JWT
   try {
     const plainUser = {
-      _id: user._id.toString(), // Convertir ObjectId a string
+      _id: user._id.toString(), 
       nombre: user.nombre,
       apellidos: user.apellidos,
       username: user.username,

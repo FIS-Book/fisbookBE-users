@@ -369,8 +369,8 @@ describe("Users API", () => {
             username: "juanperez",
             email: "juan@example.com",
             password: "juan123",
-            plan: "Plan1", // De acuerdo con las opciones disponibles en el modelo
-            rol: "User" // De acuerdo con las opciones disponibles en el modelo
+            plan: "Plan1", 
+            rol: "User" 
         };
     
         const mockUser = {
@@ -398,7 +398,6 @@ describe("Users API", () => {
               rol: 'user'
             };
         
-            // Usar jest.spyOn para interceptar el método save y simular su comportamiento
             const saveMock = jest.spyOn(User.prototype, 'save').mockResolvedValue(userData);
         
             const response = await request(app)
@@ -406,19 +405,16 @@ describe("Users API", () => {
               .send(userData)
               .expect(201);
         
-            // Verificar que la respuesta contenga el mensaje correcto
             expect(response.body).toHaveProperty('message', 'Usuario registrado exitosamente');
         
-            // Verificar que el método `save` fue llamado
             expect(saveMock).toHaveBeenCalledTimes(1);
         
-            // Restaurar el método original para evitar efectos secundarios en otros tests
             saveMock.mockRestore();
           }); 
         
         it("Debe retornar 409 si el email o username ya están en uso", async () => {
           const error = new Error();
-          error.code = 11000; // Código de error por duplicados
+          error.code = 11000; 
           jest.spyOn(User.prototype, "save").mockRejectedValue(error);
       
           const response = await request(app)
@@ -464,7 +460,6 @@ describe("Users API", () => {
               genres: ["Ficción", "Historia", "Ciencia"]
             }
           };
-          // Simulamos la respuesta del microservicio
           jest.spyOn(axios, "get").mockResolvedValue(mockResponse);
       
           const response = await request(app)
@@ -480,10 +475,9 @@ describe("Users API", () => {
         it("Debe retornar 404 si no se encuentran lecturas para el usuario", async () => {
           const mockResponse = {
             data: {
-              genres: [] // Lista vacía de géneros
+              genres: [] 
             }
           };
-          // Simulamos la respuesta del microservicio con una lista vacía
           jest.spyOn(axios, "get").mockResolvedValue(mockResponse);
       
           const response = await request(app)
@@ -501,7 +495,6 @@ describe("Users API", () => {
               data: { message: "Token inválido" }
             }
           };
-          // Simulamos una respuesta 401 del microservicio
           jest.spyOn(axios, "get").mockRejectedValue(mockErrorResponse);
       
           const response = await request(app)
@@ -516,7 +509,6 @@ describe("Users API", () => {
           const mockErrorResponse = {
             message: "Error inesperado en el servidor"
           };
-          // Simulamos un error inesperado en el microservicio
           jest.spyOn(axios, "get").mockRejectedValue(mockErrorResponse);
       
           const response = await request(app)
@@ -545,7 +537,6 @@ describe("Users API", () => {
               { bookId: "2", review: "Muy bueno", rating: 4 }
             ]
           };
-          // Simulamos una respuesta del microservicio con reseñas
           jest.spyOn(axios, "get").mockResolvedValue(mockResponse);
       
           const response = await request(app)
@@ -560,9 +551,9 @@ describe("Users API", () => {
       
         it("Debe retornar 404 si no se encuentran reseñas para el usuario", async () => {
           const mockResponse = {
-            data: [] // Respuesta vacía, sin reseñas
+            data: [] 
           };
-          // Simulamos una respuesta vacía del microservicio
+         
           jest.spyOn(axios, "get").mockResolvedValue(mockResponse);
       
           const response = await request(app)
@@ -580,7 +571,6 @@ describe("Users API", () => {
               data: { message: "Token inválido" }
             }
           };
-          // Simulamos una respuesta 401 del microservicio
           jest.spyOn(axios, "get").mockRejectedValue(mockErrorResponse);
       
           const response = await request(app)
@@ -595,7 +585,6 @@ describe("Users API", () => {
           const mockErrorResponse = {
             message: "Error inesperado en el servidor"
           };
-          // Simulamos un error inesperado en el microservicio
           jest.spyOn(axios, "get").mockRejectedValue(mockErrorResponse);
       
           const response = await request(app)

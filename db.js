@@ -1,7 +1,6 @@
 // Mongo DB
 const mongoose = require('mongoose');
  
-//Mongo DB setup
 mongoose.connect(`${process.env.MONGO_URI_USERS}`);
  
 const db = mongoose.connection;

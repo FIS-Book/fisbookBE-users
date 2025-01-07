@@ -1,25 +1,32 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
-const axios = require('axios'); // Para hacer solicitudes HTTP
+const axios = require('axios'); 
 
 // Autenticación
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../authentication/auth'); 
-const generateToken = require('../authentication/generateToken'); // Función para generar token
+const generateToken = require('../authentication/generateToken'); 
 
 // BD
 var User = require('../models/user');
 var debug = require('debug')('users-2:server');
 
 
+/**
+ * @swagger
+ * /api/v1/auth/healthz:
+ *   get:
+ *     tags:
+ *       - Health
+ *     description: 'Endpoint to check the health status of the service.'
+ *     responses:
+ *       200:
+ *         $ref: '#/responses/ServiceHealthy'
+ *       500:
+ *         $ref: '#/responses/ServerError'
+ */
 router.get('/healthz', (req, res) => {
-  /* 
-  #swagger.tags = ['Health']
-  #swagger.description = 'Endpoint to check the health status of the service.'
-  #swagger.responses[200] = { $ref: '#/responses/ServiceHealthy' }
-  #swagger.responses[500] = { $ref: '#/responses/ServerError' }
-*/
 res.sendStatus(200);
 });
 
@@ -131,7 +138,6 @@ router.put('/users/:id', verifyToken, async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
  
-    // Actualizar los datos del usuario
     usuario.nombre = nombre || usuario.nombre;
     usuario.apellidos = apellidos || usuario.apellidos;
     usuario.username = username || usuario.username;
@@ -173,7 +179,6 @@ router.put('/users/:id', verifyToken, async (req, res) => {
 router.delete('/users/:id', verifyToken, async (req, res) => {
   const userId = req.params.id;
 
-  // Verificar si el ID es válido
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ message: 'ID inválido' });
   }
@@ -228,7 +233,7 @@ router.post('/users/register', async (req, res) => {
     await user.save();
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
   } catch (err) {
-    if (err.code === 11000) {  // Error de duplicados (email único)
+    if (err.code === 11000) {  
       return res.status(409).json({ message: 'El username o el email ya está en uso' });
     }
     res.status(400).json({ message: 'Error al registrar usuario', error: err.message });
@@ -354,37 +359,31 @@ router.post('/users/login', async (req, res) => {
  */
 router.patch('/users/:userId/downloads', verifyToken, async (req, res) => { 
   try {
-    const { userId } = req.params;  // Ahora estamos usando userId
+    const { userId } = req.params;  
     const { numDescargas } = req.body;
 
-    // Validar si numDescargas está definido
     if (typeof numDescargas === 'undefined') {
       return res.status(400).json({ error: "'numDescargas' is required." });
     }
 
-    // Actualizar el número de descargas del usuario utilizando userId
     const updatedUser = await User.findByIdAndUpdate(
       userId,  // Buscar por userId
       { $set: { numDescargas } },
       { new: true, runValidators: true }
     );
 
-    // Verificar si el usuario fue encontrado
     if (!updatedUser) {
       return res.status(404).json({ error: 'Usuario no encontrado.' });
     }
 
-    // Responder con el mensaje de éxito y el usuario actualizado
     res.json({
       message: 'El número de descargas del usuario se ha actualizado éxitosamente.',
       user: updatedUser,
     });
   } catch (error) {
-    // Manejo de errores, como validaciones fallidas
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: 'Fallo en la validación. Compruebe los datos proporcionados.', details: error.errors });
     }
-    // Manejo de errores inesperados del servidor
     return res.status(500).json({ message: 'Ha ocurrido un error inesperado en el servidor', error: error.message });
   }
 });
@@ -456,32 +455,27 @@ router.patch('/users/:userId/downloads', verifyToken, async (req, res) => {
 router.get('/users/:id/readings', verifyToken, async (req, res) => {
   const { id } = req.params;
 
-  // Obtener el token del encabezado Authorization
   const token = req.headers['authorization'];
   
-  // Validar si el token está presente
   if (!token) {
     return res.status(401).json({ message: 'Token de autorización faltante.' });
   }
   
-  console.log('Token recibido por el endpoint:', token); // Log para depuración
-
+  console.log('Token recibido por el endpoint:', token); 
   try {
-    // Hacer la solicitud al microservicio de lecturas
     const response = await axios.get(`${process.env.BASE_URL}/api/v1/readings`, {
       headers: {
-        Authorization: token, // Enviar el token al microservicio
+        Authorization: token, 
       },
-      params: { userId: id }, // Enviar el ID como parámetro
+      params: { userId: id }, 
     });
 
-    console.log('Respuesta del microservicio:', response.data); // Log para ver los datos devueltos
+    console.log('Respuesta del microservicio:', response.data); 
 
-    // Verificar que la respuesta tiene datos y no está vacía
     if (response.data && Array.isArray(response.data.genres) && response.data.genres.length > 0) {
       return res.status(200).json({
         message: 'Listas de lectura obtenidas con éxito.',
-        readings: response.data.genres, // Devolver los géneros con sus detalles
+        readings: response.data.genres, 
       });
     } else {
       return res.status(404).json({ message: 'No se encontraron lecturas para este usuario.' });
@@ -489,21 +483,17 @@ router.get('/users/:id/readings', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Error en el endpoint:', error);
 
-    // Manejar errores específicos
     if (error.response) {
-      // Si la respuesta es 401, significa que el token es inválido
       if (error.response.status === 401) {
         return res.status(401).json({ message: 'No autorizado: Token inválido o faltante.' });
       }
 
-      // Si se recibe un error distinto de 401, mostrar los detalles
       return res.status(error.response.status || 500).json({
         message: error.response.data.message || 'Error al obtener las lecturas del microservicio.',
         error: error.response.data || error.message,
       });
     }
 
-    // Si ocurre un error inesperado, mostrar detalles del error
     return res.status(500).json({ message: 'Error inesperado en el servidor.', error: error.message });
   }
 });
@@ -549,12 +539,12 @@ router.get('/users/:id/readings', verifyToken, async (req, res) => {
  */
 
 router.get('/users/reviews/user/:userId/book', verifyToken, async (req, res) => {
-  console.log('User from Token:', req.user); // Asegúrate de que el usuario sea correcto
+  console.log('User from Token:', req.user); 
  
   const { userId } = req.params;
  
   try {
-    const token = req.headers.authorization.split(' ')[1]; // Token enviado al backend
+    const token = req.headers.authorization.split(' ')[1]; 
     const response = await axios.get(`${process.env.BASE_URL}/api/v1/reviews/users/${userId}/bk`, {
       headers: {
         Authorization: `Bearer ${token}`,

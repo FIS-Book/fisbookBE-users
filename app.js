@@ -12,50 +12,39 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
-// Middleware de registro de solicitudes
 app.use(logger('dev'));
 
-// Middleware para parsear solicitudes JSON y URL-encoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Middleware para parsear cookies
 app.use(cookieParser());
 
-// Configuración de CORS
 const corsOptions = {
-  origin: [`${process.env.BASE_URL}`,'http://localhost:3000'], // Permitir solicitudes desde este dominio
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+  origin: [`${process.env.BASE_URL}`,'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
 };
 app.use(cors(corsOptions));
 
-// Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rutas
 app.use('/api/v1/auth', usersRouter);
 
 
-
-// Configuración de Swagger
 const swaggerOptions = {
     definition: {
-        openapi: '3.0.0',  // Versión de OpenAPI
+        openapi: '3.0.0',  
         info: {
-            title: 'Mi API',  // Título de la API
-            version: '1.0.0',  // Versión de la API
-            description: 'Documentación de mi API usando Swagger',  // Descripción
+            title: 'Mi API',  
+            version: '1.0.0',  
+            description: 'Documentación de mi API usando Swagger',  
         },
     },
-    // Ruta donde Swagger generará la documentación
-    apis: ['./routes/*.js'],  // Los archivos donde están tus rutas (ajusta según tu estructura)
+    apis: ['./routes/*.js'], 
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-// Usar swagger-ui-express para mostrar la documentación interactiva
 app.use('/api/v1/auth/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Exportar la app
 module.exports = app;

@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     nombre: {
         type: String,
         required: [true, 'El nombre es obligatorio'],
-        minlength: [2, 'El nombre debe tener al menos 2 caracteres'] // Validación de longitud mínima
+        minlength: [2, 'El nombre debe tener al menos 2 caracteres'] 
     },
     apellidos: {
         type: String,
@@ -14,11 +14,11 @@ const userSchema = new mongoose.Schema({
     },
     username: {
         type: String,
-        required: true, // El username es obligatorio
-        unique: true, // El username debe ser único
-        minlength: [3, 'El nombre de usuario debe tener al menos 3 caracteres'], // Validación de longitud mínima
-        maxlength: [30, 'El nombre de usuario no puede tener más de 30 caracteres'], // Validación de longitud máxima
-        match: [/^[a-zA-Z0-9._-]+$/, 'El nombre de usuario solo puede contener letras, números, puntos, guiones bajos y guiones'], // Expresión regular para validar los caracteres permitidos
+        required: true, 
+        unique: true, 
+        minlength: [3, 'El nombre de usuario debe tener al menos 3 caracteres'], 
+        maxlength: [30, 'El nombre de usuario no puede tener más de 30 caracteres'], 
+        match: [/^[a-zA-Z0-9._-]+$/, 'El nombre de usuario solo puede contener letras, números, puntos, guiones bajos y guiones'], 
     },
     email: {
         type: String,

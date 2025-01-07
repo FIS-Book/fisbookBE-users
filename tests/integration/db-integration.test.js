@@ -16,7 +16,7 @@ describe("Pruebas de Integración - Conexión con la DB de Usuarios", () => {
           }
         } catch (error) {
           console.error('Error al conectar con la base de datos:', error);
-          throw error; // Detiene las pruebas si no se puede conectar
+          throw error; 
         }
       });
 
