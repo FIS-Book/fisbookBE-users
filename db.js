@@ -1,6 +1,7 @@
 // Conexión a MongoDB
 const mongoose = require('mongoose');
 const { db } = require('./models/user');
+require('dotenv').config();
 
 // Obtén la URI desde las variables de entorno
 const uri = process.env.MONGO_URI_USERS;
