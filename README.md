@@ -1,31 +1,31 @@
 # 👥 Microservicio REST - Users Service
-
-Este proyecto es un microservicio REST diseñado para gestionar usuarios. Implementa una arquitectura moderna orientada a microservicios y está desarrollado utilizando tecnologías avanzadas para garantizar escalabilidad, mantenibilidad y facilidad de uso.
-
 ---
+
+Este proyecto es un microservicio REST diseñado para gestionar los usuarios de la aplicación FISBook. Proporciona funcionalidades para registrar, autenticar y gestionar los perfiles de los usuarios a través de una API REST.
+
 
 ## 🚀 Características Principales
 
-- **Gestión de usuarios:** Proporciona endpoints REST para consultar y gestionar datos de usuarios.
-- **Persistencia:** Utiliza MongoDB como base de datos NoSQL para almacenar y gestionar la información de los usuarios.
-- **Documentación interactiva:** Documentación de la API generada automáticamente con Swagger para visualizar y probar los endpoints.
-- **Pruebas automatizadas:** Pruebas unitarias y de integración implementadas con Jest y Supertest.
-- **Dockerización:** Totalmente preparado para ejecutarse en contenedores Docker, lo que facilita el despliegue y portabilidad.
-- **Middleware robusto:** Gestión de autenticación y autorización mediante JSON Web Tokens (JWT).
-- **Configuración de CORS:** Configurado para permitir solicitudes seguras desde orígenes autorizados.
+- **Gestión de usuarios:** proporciona endpoints REST para consultar y gestionar datos de usuarios.
+- **Persistencia:** utiliza MongoDB como base de datos NoSQL para almacenar y gestionar la información de los usuarios.
+- **Documentación interactiva:** documentación de la API generada automáticamente con Swagger para visualizar y probar los endpoints.
+- **Pruebas automatizadas:** pruebas unitarias y de integración implementadas con Jest y Supertest.
+- **Dockerización:** preparado para ejecutarse en contenedores Docker.
+- **Middleware robusto:** gestión de autenticación y autorización mediante JSON Web Tokens (JWT).
+- **Configuración de CORS:** configurado para permitir solicitudes seguras desde orígenes autorizados.
 
 ---
 
 ## 🛠️ Tecnologías y Herramientas Usadas
 
-- **Node.js:** Plataforma de desarrollo utilizada como base del microservicio.
-- **Express.js:** Framework para la creación de APIs REST.
-- **MongoDB + Mongoose:** Base de datos NoSQL utilizada junto con un ORM para modelado de datos.
-- **Swagger:** Herramienta para la documentación interactiva de la API.
-- **Docker:** Utilizado para empaquetar y desplegar el microservicio en contenedores.
-- **Jest + Supertest:** Frameworks para pruebas unitarias y de integración.
-- **dotenv:** Para la gestión de variables de entorno.
-- **CORS:** Configuración para manejo seguro de solicitudes entre dominios.
+- **Node.js:** plataforma de desarrollo utilizada como base del microservicio.
+- **Express.js:** framework para la creación de APIs REST.
+- **MongoDB + Mongoose:** base de datos NoSQL utilizada junto con un ORM para modelado de datos.
+- **Swagger:** herramienta para la documentación interactiva de la API.
+- **Docker:** utilizado para empaquetar y desplegar el microservicio en contenedores.
+- **Jest + Supertest:** frameworks para pruebas unitarias y de integración.
+- **dotenv:** para la gestión de variables de entorno.
+- **CORS:** configuración para manejo seguro de solicitudes entre dominios.
 
 ---
 
