@@ -608,14 +608,7 @@ describe("Users API", () => {
         });
       });
 
-      jest.mock('../authentication/generateToken', () => ({
-        generateToken: jest.fn(),
-      }));
-      
-      jest.mock('../models/User', () => ({
-        findOne: jest.fn(),
-      }));
-      
+       
       describe("POST /users/login", () => {
         const userCredentials = {
           email: "juan@example.com",
