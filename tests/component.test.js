@@ -3,6 +3,7 @@ const request = require('supertest');
 const User = require('../models/user'); 
 const mongoose = require('mongoose');
 const axios = require('axios');
+const { generateToken } = require('../authentication/generateToken');
  
 jest.mock('../authentication/auth', () => (req, res, next) => {
     req.user = { id: 'mockedUserId', role: 'Admin' }; 
@@ -15,6 +16,7 @@ jest.mock('../authentication/generateToken', () => ({
 
  
 jest.mock('axios');
+
 
 describe("Users API", () => {
     describe("GET /api/v1/auth/users", () => {
@@ -385,41 +387,35 @@ describe("Users API", () => {
             jest.clearAllMocks();
         });
     
-        // it('Debe registrar un usuario exitosamente', async () => {
-        //     // Mock de la respuesta de la base de datos y creación de usuario
-        //     User.findOne = jest.fn().mockResolvedValueOnce(null);  // Simula que no existe el usuario con el mismo email o username
-            
-        //     // Simulamos que el método save guarda el usuario correctamente
-        //     User.prototype.save = jest.fn().mockResolvedValue(mockUser);
-          
-        //     // Enviar la solicitud POST para registrar el usuario
-        //     const response = await request(app)
-        //       .post('/api/v1/auth/users/register')
-        //       .send(mockUser);
-          
-        //     // Verificamos que la respuesta tenga el estado 201 (Creado)
-        //     expect(response.statusCode).toBe(201);
-          
-        //     // Verificamos que la respuesta contenga el mensaje adecuado
-        //     expect(response.body).toHaveProperty(
-        //       'message',
-        //       'Usuario registrado exitosamente'
-        //     );
-          
-        //     // Verificamos que el método save fue llamado una vez con los datos correctos
-        //     expect(User.prototype.save).toHaveBeenCalledWith(
-        //       expect.objectContaining({
-        //         nombre: mockUser.nombre,
-        //         apellidos: mockUser.apellidos,
-        //         username: mockUser.username,
-        //         email: mockUser.email,
-        //         password: mockUser.password,
-        //         plan: mockUser.plan,
-        //         rol: mockUser.rol
-        //       })
-        //     );
-        // });
-      
+        it('Debe registrar un usuario exitosamente', async () => {
+            const userData = {
+              nombre: 'Kristina',
+              apellidos: 'Lacasta',
+              username: 'kristina123',
+              password: 'password123',
+              email: 'kristina@example.com',
+              plan: 'premium',
+              rol: 'user'
+            };
+        
+            // Usar jest.spyOn para interceptar el método save y simular su comportamiento
+            const saveMock = jest.spyOn(User.prototype, 'save').mockResolvedValue(userData);
+        
+            const response = await request(app)
+              .post('/api/v1/auth/users/register')
+              .send(userData)
+              .expect(201);
+        
+            // Verificar que la respuesta contenga el mensaje correcto
+            expect(response.body).toHaveProperty('message', 'Usuario registrado exitosamente');
+        
+            // Verificar que el método `save` fue llamado
+            expect(saveMock).toHaveBeenCalledTimes(1);
+        
+            // Restaurar el método original para evitar efectos secundarios en otros tests
+            saveMock.mockRestore();
+          }); 
+        
         it("Debe retornar 409 si el email o username ya están en uso", async () => {
           const error = new Error();
           error.code = 11000; // Código de error por duplicados
@@ -453,17 +449,6 @@ describe("Users API", () => {
         beforeEach(() => {
           jest.clearAllMocks();
         });
-      
-        // it("Debe retornar 400 si el ID de usuario es inválido", async () => {
-        //     const invalidUserId = ""; // ID vacío
-        //     const response = await request(app)
-        //       .get(`/api/v1/auth/users/${invalidUserId}/readings`)
-        //       .set('Authorization', 'valid-jwt-token'); // Asegúrate de usar un token válido si es necesario
-          
-        //     expect(response.statusCode).toBe(400); // Espera un 400
-        //     expect(response.body).toHaveProperty("message", "ID de usuario inválido."); // Asegúrate de que el mensaje sea el correcto
-        //   });
-          
       
         it("Debe retornar 401 si el token de autorización falta", async () => {
           const response = await request(app)
@@ -551,15 +536,7 @@ describe("Users API", () => {
         beforeEach(() => {
           jest.clearAllMocks();
         });
-      
-        // it("Debe retornar 400 si el parámetro userId es obligatorio", async () => {
-        //   const response = await request(app)
-        //     .get('/api/v1/auth/users/reviews/user//book') // userId vacío
-        //     .set('Authorization', `Bearer ${token}`);
-      
-        //   expect(response.statusCode).toBe(400);
-        //   expect(response.body).toHaveProperty("message", "El parámetro userId es obligatorio.");
-        // });
+          
       
         it("Debe retornar 200 si las reseñas del usuario se obtienen correctamente", async () => {
           const mockResponse = {
@@ -631,6 +608,14 @@ describe("Users API", () => {
         });
       });
 
+      jest.mock('../authentication/generateToken', () => ({
+        generateToken: jest.fn(),
+      }));
+      
+      jest.mock('../models/User', () => ({
+        findOne: jest.fn(),
+      }));
+      
       describe("POST /users/login", () => {
         const userCredentials = {
           email: "juan@example.com",
@@ -645,7 +630,7 @@ describe("Users API", () => {
         beforeEach(() => {
           jest.clearAllMocks();
         });
-
+      
         // it("Debe iniciar sesión exitosamente (200)", async () => {
         //   // Simular que User.findOne devuelve el mockUser cuando se pasa el email correcto
         //   jest.spyOn(User, "findOne").mockResolvedValue(mockUser);
@@ -676,7 +661,7 @@ describe("Users API", () => {
         //   // Verificamos que generateToken haya sido llamado correctamente con el mockUser
         //   expect(generateToken).toHaveBeenCalledWith(mockUser);
         // });
-      
+
         it("Debe retornar 404 si el usuario no se encuentra (usuario no encontrado)", async () => {
           jest.spyOn(User, "findOne").mockResolvedValue(null);
       

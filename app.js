@@ -3,7 +3,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config();
-
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -36,24 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Rutas
 app.use('/api/v1/auth', usersRouter);
 
-// Conexión a MongoDB
-const mongoose = require('mongoose');
 
-// Obtén la URI desde las variables de entorno
-const uri = process.env.MONGO_URI_USERS;
-
-if (!uri) {
-    console.error('❌ Error: La variable de entorno MONGO_URI_USERS no está definida.');
-    process.exit(1); // Salir del proceso si no se encuentra la URI
-}
-
-// Establece la conexión con MongoDB Atlas
-mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log('✅ Conexión exitosa a MongoDB Atlas'))
-.catch(err => console.error('❌ Error al conectar a MongoDB Atlas:', err));
 
 // Configuración de Swagger
 const swaggerOptions = {

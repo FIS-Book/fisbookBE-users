@@ -447,8 +447,6 @@ router.patch('/users/:userId/downloads', verifyToken, async (req, res) => {
  *                       description:
  *                         type: string
  *                         description: Descripción de la lista de lectura.
- *       400:
- *         description: Error en la solicitud, parámetros inválidos.
  *       404:
  *         description: No se encontraron listas de lecturas para el usuario.
  *       500:
@@ -457,11 +455,6 @@ router.patch('/users/:userId/downloads', verifyToken, async (req, res) => {
 
 router.get('/users/:id/readings', verifyToken, async (req, res) => {
   const { id } = req.params;
-
-  // Validar que el ID del usuario sea válido
-  if (!id || typeof id !== 'string') {
-    return res.status(400).json({ message: 'ID de usuario inválido.' });
-  }
 
   // Obtener el token del encabezado Authorization
   const token = req.headers['authorization'];
@@ -549,8 +542,6 @@ router.get('/users/:id/readings', verifyToken, async (req, res) => {
  *                   rating:
  *                     type: number
  *                     description: Calificación dada al libro.
- *       400:
- *         description: Parámetros inválidos en la solicitud.
  *       404:
  *         description: No se encontraron reseñas para este usuario.
  *       500:
@@ -561,10 +552,6 @@ router.get('/users/reviews/user/:userId/book', verifyToken, async (req, res) => 
   console.log('User from Token:', req.user); // Asegúrate de que el usuario sea correcto
  
   const { userId } = req.params;
- 
-  if (!userId) {
-    return res.status(400).json({ message: 'El parámetro userId es obligatorio.' });
-  }
  
   try {
     const token = req.headers.authorization.split(' ')[1]; // Token enviado al backend
