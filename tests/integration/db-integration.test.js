@@ -1,7 +1,9 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('../../models/user');  
- 
+const db = require('./db.js');
+
+
 jest.setTimeout(30000);
  
 describe("Pruebas de Integración - Conexión con la DB de Usuarios", () => {
@@ -27,7 +29,6 @@ describe("Pruebas de Integración - Conexión con la DB de Usuarios", () => {
  
     afterAll(async () => {
         if (dbConnect.readyState == 1) {
-            await dbConnect.dropDatabase();  
             await dbConnect.close();
             await mongoose.disconnect();
         }

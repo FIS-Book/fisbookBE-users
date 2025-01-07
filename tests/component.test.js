@@ -4,6 +4,10 @@ const User = require('../models/user');
 const mongoose = require('mongoose');
 const axios = require('axios');
 const { generateToken } = require('../authentication/generateToken');
+
+const db = require('./db.js');
+
+
  
 jest.mock('../authentication/auth', () => (req, res, next) => {
     req.user = { id: 'mockedUserId', role: 'Admin' }; 
