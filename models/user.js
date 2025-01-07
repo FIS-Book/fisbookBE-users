@@ -65,7 +65,7 @@ userSchema.methods.cleanup = function() {
         rol: this.rol,
         listaLecturasId: this.listaLecturasId,
         numDescargas: this.numDescargas,
-        reviewId: this.reviewId
+        resenasId: this.resenasId
     }
 }
 
