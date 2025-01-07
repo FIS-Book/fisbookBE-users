@@ -2,8 +2,13 @@ name: Users tests CI
 
 on:
   push:
+    branches:
+      - main
+      - develop
   pull_request:
-  workflow_call:
+    branches:
+      - main
+      - develop
   workflow_dispatch:
 
 jobs:
