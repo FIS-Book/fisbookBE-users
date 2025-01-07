@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
 const axios = require('axios'); 
+const cors = require('cors');
+
 
 // Autenticación
 const jwt = require('jsonwebtoken');

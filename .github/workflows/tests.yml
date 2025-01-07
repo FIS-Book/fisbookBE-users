@@ -1,20 +1,20 @@
-name: Users Service Tests CI
- 
+name: Users tests CI
+
 on:
   push:
   pull_request:
   workflow_call:
   workflow_dispatch:
- 
+
 jobs:
   test:
     runs-on: ubuntu-latest
     environment: fisbookBE-users
- 
+
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
- 
+
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
@@ -22,18 +22,22 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
- 
+
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
         env:
           MONGO_URI_USERS_TEST: ${{ secrets.MONGO_URI_USERS_TEST }}
- 
+
   integration:
     needs: test
     runs-on: ubuntu-latest
     environment: fisbookBE-users
- 
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
@@ -41,8 +45,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
- 
-      - run: echo $MONGO_URI_USERS_TEST
+
       - run: npm ci
       - run: npm run build --if-present
       - run: npm run integration
