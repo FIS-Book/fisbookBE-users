@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const { generateToken } = require('../authentication/generateToken');
 
-const db = require('./db.js');
 
 
  

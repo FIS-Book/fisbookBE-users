@@ -1,7 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('../../models/user');  
-const db = require('./db.js');
 
 
 jest.setTimeout(30000);
