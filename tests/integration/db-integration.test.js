@@ -9,7 +9,7 @@ jest.setTimeout(30000);
 describe('Integration-Test Reviews DB connection', () => {
     beforeAll(async () => {
         if (mongoose.connection.readyState !== 1) {
-            await mongoose.connect(process.env.MONGO_URI_USERS_TEST || 'mongodb://localhost:27017/test', {
+            await mongoose.connect(process.env.MONGO_URI_USERS_TEST, {
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
             });
@@ -111,41 +111,39 @@ describe('Integration-Test Reviews DB connection', () => {
 
     describe("Validaciones del Modelo de Usuario", () => {     
         
-        /*
-        it('debería fallar si el correo electrónico ya existe', async () => {
-            const user1 = new User({
-                username: 'user1',
-                email: 'testuser@example.com',
-                password: 'password123',
-                rol: 'User',
-                plan: 'Plan1',
-                apellidos: 'ApellidoTest',
-                nombre: 'NombreTest',
-            });
+        // it('debería fallar si el correo electrónico ya existe', async () => {
+        //     const user1 = new User({
+        //         username: 'user1',
+        //         email: 'testuser@example.com',
+        //         password: 'password123',
+        //         rol: 'User',
+        //         plan: 'Plan1',
+        //         apellidos: 'ApellidoTest',
+        //         nombre: 'NombreTest',
+        //     });
         
-            const user2 = new User({
-                username: 'user2',
-                email: 'testuser@example.com', // Mismo email que user1
-                password: 'password456',
-                rol: 'User',
-                plan: 'Plan2',
-                apellidos: 'ApellidoTest',
-                nombre: 'NombreTest',
-            });
+        //     const user2 = new User({
+        //         username: 'user2',
+        //         email: 'testuser@example.com', // Mismo email que user1
+        //         password: 'password456',
+        //         rol: 'User',
+        //         plan: 'Plan2',
+        //         apellidos: 'ApellidoTest',
+        //         nombre: 'NombreTest',
+        //     });
         
-            await user1.save();
+        //     await user1.save();
         
-            let error;
-            try {
-                await user2.save();
-            } catch (err) {
-                error = err;
-            }
-            expect(error).toBeDefined();
-            expect(error.name).toBe('MongoServerError');
-            expect(error.code).toBe(11000); 
-        });
-                */
+        //     let error;
+        //     try {
+        //         await user2.save();
+        //     } catch (err) {
+        //         error = err;
+        //     }
+        //     expect(error).toBeDefined();
+        //     expect(error.name).toBe('MongoServerError');
+        //     expect(error.code).toBe(11000); 
+        // });
 
         it('debería fallar si la contraseña es demasiado corta', async () => {
             const user = new User({
