@@ -33,7 +33,7 @@ Este proyecto es un microservicio REST diseñado para gestionar los usuarios de 
 
 El microservicio expone las siguientes APIs REST para interactuar con los datos de los usuarios:
 
-### 📋 Endpoints Disponibles
+### 📋 Endpoints Disponibles:
 
 ### 1. Verificar el estado de salud del servicio
 - **Método:** `GET`
@@ -55,7 +55,7 @@ El microservicio expone las siguientes APIs REST para interactuar con los datos 
       }
       ```
 
-#### 2. Obtener lista de usuarios
+### 2. Obtener lista de usuarios
 - **Método:** `GET`
 - **URL:** `/api/v1/auth/users`
 - **Descripción:** Obtiene una lista de todos los usuarios registrados.
@@ -63,7 +63,7 @@ El microservicio expone las siguientes APIs REST para interactuar con los datos 
   - **200:** Retorna una lista de usuarios.
   - **500:** Error en el servidor.
 
-#### 3. Obtener un usuario por ID
+### 3. Obtener un usuario por ID
 - **Método:** `GET`
 - **URL:** `/api/v1/auth/users/:id`
 - **Descripción:** Obtiene los detalles de un usuario específico mediante su ID.
@@ -74,7 +74,7 @@ El microservicio expone las siguientes APIs REST para interactuar con los datos 
   - **404:** Usuario no encontrado.
   - **500:** Error en el servidor.
 
-#### 4. Actualizar un usuario
+### 4. Actualizar un usuario
 - **Método:** `PUT`
 - **URL:** `/api/v1/auth/users/:id`
 - **Descripción:** Actualiza los datos de un usuario existente.
@@ -91,7 +91,7 @@ El microservicio expone las siguientes APIs REST para interactuar con los datos 
     "rol": "string"
   }
 
-#### 5. Eliminar un usuario
+### 5. Eliminar un usuario
 - **Método:** `DELETE`
 - **URL:** `/api/v1/auth/users/:id`
 - **Descripción:** Elimina un usuario específico.
@@ -103,7 +103,7 @@ El microservicio expone las siguientes APIs REST para interactuar con los datos 
   - **404:** Usuario no encontrado.
   - **500:** Error en el servidor.
 
-#### 6. Registrar un nuevo usuario
+### 6. Registrar un nuevo usuario
 - **Método:** `POST`
 - **URL:** `/api/v1/auth/users/register`
 - **Descripción:** Crea un nuevo usuario en la base de datos con los datos proporcionados.
@@ -119,7 +119,7 @@ El microservicio expone las siguientes APIs REST para interactuar con los datos 
     "rol": "string"
   }
 
-#### 7. Iniciar sesión
+### 7. Iniciar sesión
 - **Método:** `POST`
 - **URL:** `/api/v1/auth/users/login`
 - **Descripción:** Permite a un usuario autenticarse con su email y contraseña, y devuelve un token JWT.
