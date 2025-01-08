@@ -2,58 +2,48 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
-require('dotenv').config(); // Cargar variables de entorno
+require('dotenv').config();
+const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const db = require('./db.js');
 
-var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
-
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+const corsOptions = {
+  origin: [`${process.env.BASE_URL}`,'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/api-v1/users', usersRouter);
+app.use('/api/v1/auth', usersRouter);
 
-// Conexión a MongoDB
-const mongoose = require('mongoose');
 
-// Aquí defines la URI de tu base de datos directamente en el código
-const uri = 'mongodb+srv://kristinalacasta:Sf5FkZ6GkDbN2E5B@cluster0.hywhz.mongodb.net/mi_base_de_datos?retryWrites=true&w=majority&appName=user_app';
-
-// Establece la conexión con MongoDB Atlas
-mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log('✅ Conexión exitosa a MongoDB Atlas'))
-.catch(err => console.error('❌ Error al conectar a MongoDB Atlas:', err));
-
-// Configuración de Swagger
 const swaggerOptions = {
     definition: {
-        openapi: '3.0.0',  // Versión de OpenAPI
+        openapi: '3.0.0',  
         info: {
-            title: 'Mi API',  // Título de la API
-            version: '1.0.0',  // Versión de la API
-            description: 'Documentación de mi API usando Swagger',  // Descripción
+            title: 'Mi API',  
+            version: '1.0.0',  
+            description: 'Documentación de mi API usando Swagger',  
         },
     },
-    // Ruta donde Swagger generará la documentación
-    apis: ['./routes/*.js'],  // Los archivos donde están tus rutas (ajusta según tu estructura)
+    apis: ['./routes/*.js'], 
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-// Usar swagger-ui-express para mostrar la documentación interactiva
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/v1/auth/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Exportar la app
 module.exports = app;

@@ -1,40 +1,40 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
-const axios = require('axios'); // Para hacer solicitudes HTTP
+const axios = require('axios'); 
+const cors = require('cors');
+//
 
 // Autenticación
 const jwt = require('jsonwebtoken');
-const verifyToken = require('../authentication/auth'); // Middleware de verificación de token
-const generateToken = require('../authentication/generateToken'); // Función para generar token
-// const validateRole = require('../authentication/roleValidator'); // Opcional
-
-// Ruta de prueba para autenticación
-router.get('/pruebaAuth', verifyToken, (req, res) => {
-  res.status(200).json({
-    message: 'Autenticación exitosa',
-    user: req.user
-  });
-});
+const verifyToken = require('../authentication/auth'); 
+const generateToken = require('../authentication/generateToken'); 
 
 // BD
 var User = require('../models/user');
 var debug = require('debug')('users-2:server');
 
 
+/**
+ * @swagger
+ * /api/v1/auth/healthz:
+ *   get:
+ *     tags:
+ *       - Health
+ *     description: 'Endpoint to check the health status of the service.'
+ *     responses:
+ *       200:
+ *         $ref: '#/responses/ServiceHealthy'
+ *       500:
+ *         $ref: '#/responses/ServerError'
+ */
 router.get('/healthz', (req, res) => {
-  /* 
-  #swagger.tags = ['Health']
-  #swagger.description = 'Endpoint to check the health status of the service.'
-  #swagger.responses[200] = { $ref: '#/responses/ServiceHealthy' }
-  #swagger.responses[500] = { $ref: '#/responses/ServerError' }
-*/
 res.sendStatus(200);
 });
 
 /**
  * @swagger
- * api-v1/users:
+ * /api/v1/auth/users:
  *   get:
  *     summary: Obtiene una lista de todos los usuarios.
  *     responses:
@@ -43,7 +43,7 @@ res.sendStatus(200);
  *       500:
  *         description: Error en el servidor.
  */
-router.get('/', verifyToken, async (req, res) => {
+router.get('/users', verifyToken, async (req, res) => {
   try {
     const result = await User.find();
     res.send(result.map((c) => c.cleanup())); // Limpiar atributos
@@ -55,7 +55,7 @@ router.get('/', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api-v1/users/{id}:
+ * /api/v1/auth/users/{id}:
  *   get:
  *     summary: Obtiene un usuario por su ID.
  *     parameters:
@@ -73,7 +73,7 @@ router.get('/', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.get('/:id', verifyToken, async (req, res) => {
+router.get('/users/:id', verifyToken, async (req, res) => {
   const id = req.params.id;
   try {
     const usuario = await User.findById(id);
@@ -89,7 +89,7 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api-v1/users/{id}:
+ * /api/v1/auth/users/{id}:
  *   put:
  *     summary: Actualiza los datos de un usuario.
  *     description: Actualiza los datos del usuario identificado por el ID proporcionado.
@@ -129,7 +129,7 @@ router.get('/:id', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.put('/:id', verifyToken, async (req, res) => {
+router.put('/users/:id', verifyToken, async (req, res) => {
   const id = req.params.id;
   const { nombre, apellidos, username, email, plan, rol } = req.body;
  
@@ -140,7 +140,6 @@ router.put('/:id', verifyToken, async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
  
-    // Actualizar los datos del usuario
     usuario.nombre = nombre || usuario.nombre;
     usuario.apellidos = apellidos || usuario.apellidos;
     usuario.username = username || usuario.username;
@@ -158,7 +157,7 @@ router.put('/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * api-v1/users/{id}:
+ * /api/v1/auth/users/{id}:
  *   delete:
  *     summary: Elimina un usuario por su ID.
  *     description: Elimina el usuario identificado por el ID proporcionado.
@@ -179,10 +178,9 @@ router.put('/:id', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/users/:id', verifyToken, async (req, res) => {
   const userId = req.params.id;
 
-  // Verificar si el ID es válido
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ message: 'ID inválido' });
   }
@@ -201,7 +199,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * /api-v1/users/register:
+ * /api/v1/auth/users/register:
  *   post:
  *     summary: Registra un nuevo usuario.
  *     description: Crea un nuevo usuario en la base de datos con los datos proporcionados.
@@ -229,7 +227,7 @@ router.delete('/:id', verifyToken, async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.post('/register', async (req, res) => {
+router.post('/users/register', async (req, res) => {
   const { nombre, apellidos, username, password, email, plan, rol} = req.body;
 
   try {
@@ -237,7 +235,7 @@ router.post('/register', async (req, res) => {
     await user.save();
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
   } catch (err) {
-    if (err.code === 11000) {  // Error de duplicados (email único)
+    if (err.code === 11000) {  
       return res.status(409).json({ message: 'El username o el email ya está en uso' });
     }
     res.status(400).json({ message: 'Error al registrar usuario', error: err.message });
@@ -247,7 +245,7 @@ router.post('/register', async (req, res) => {
 
 /**
  * @swagger
- * /api-v1/users/login:
+ * /api/v1/auth/users/login:
  *   post:
  *     summary: Inicia sesión en el sistema.
  *     description: Permite a un usuario autenticarse con su email y contraseña, y devuelve un token JWT.
@@ -289,14 +287,13 @@ router.post('/register', async (req, res) => {
  *       500:
  *         description: Error en el servidor.
  */
-router.post('/login', async (req, res) => {
+router.post('/users/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email, password });
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-    // Generar el token JWT
     const token = generateToken(user);
 
     res.status(200).json({ message: 'Inicio de sesión exitoso', token });
@@ -305,9 +302,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
 /**
  * @swagger
- * /api-v1/users/{userId}/downloads:
+ * /api/v1/auth/users/{userId}/downloads:
  *   patch:
  *     summary: Actualiza el número de descargas de un usuario.
  *     description: Permite a un administrador o al propio usuario actualizar la cantidad de descargas asociadas a un usuario.
@@ -359,48 +357,44 @@ router.post('/login', async (req, res) => {
  *         description: Usuario no encontrado.
  *       500:
  *         description: Error en el servidor.
+ * 
  */
-router.patch('/:username/downloads', verifyToken, async (req, res) => { 
+router.patch('/users/:userId/downloads', verifyToken, async (req, res) => { 
   try {
-    const { username } = req.params;
+    const { userId } = req.params;  
     const { numDescargas } = req.body;
 
-    // Validar si downloadCount está definido
     if (typeof numDescargas === 'undefined') {
-      return res.status(400).json({ error: "'downloadCount' is required." });
+      return res.status(400).json({ error: "'numDescargas' is required." });
     }
 
-    // Actualizar el número de descargas del usuario
-    const updatedUser = await User.findOneAndUpdate(
-      { username: username },
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,  // Buscar por userId
       { $set: { numDescargas } },
       { new: true, runValidators: true }
     );
 
-    // Verificar si el usuario fue encontrado
     if (!updatedUser) {
       return res.status(404).json({ error: 'Usuario no encontrado.' });
     }
 
-    // Responder con el mensaje de éxito y el usuario actualizado
     res.json({
       message: 'El número de descargas del usuario se ha actualizado éxitosamente.',
       user: updatedUser,
     });
   } catch (error) {
-    // Manejo de errores, como validaciones fallidas
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: 'Fallo en la validación. Compruebe los datos proporcionados.', details: error.errors });
     }
-    // Manejo de errores inesperados del servidor
     return res.status(500).json({ message: 'Ha ocurrido un error inesperado en el servidor', error: error.message });
   }
 });
 
 
+
 /**
  * @swagger
- * /api-v1/users/{userId}/readings:
+ * /api/v1/auth/users/{userId}/readings:
  *   get:
  *     summary: Obtiene las listas de lectura de un usuario.
  *     description: Permite obtener las listas de lecturas de un usuario dado su `userId`.
@@ -454,48 +448,124 @@ router.patch('/:username/downloads', verifyToken, async (req, res) => {
  *                       description:
  *                         type: string
  *                         description: Descripción de la lista de lectura.
- *       400:
- *         description: Error en la solicitud, parámetros inválidos.
  *       404:
  *         description: No se encontraron listas de lecturas para el usuario.
  *       500:
  *         description: Error inesperado del servidor.
  */
-const MS_READING_URL = process.env.MS_READING_URL;
- 
-router.get('/:id/readings', async (req, res) => {
+
+router.get('/users/:id/readings', verifyToken, async (req, res) => {
   const { id } = req.params;
- 
-  // Validar que el id del usuario es válido
-  if (!id || typeof id !== 'string') {
-    return res.status(400).json({ message: 'ID de usuario inválido.' });
+
+  const token = req.headers['authorization'];
+  
+  if (!token) {
+    return res.status(401).json({ message: 'Token de autorización faltante.' });
   }
- 
+  
+  console.log('Token recibido por el endpoint:', token); 
   try {
-    // Hacer la solicitud al microservicio de lecturas
-    const response = await axios.get(MS_READING_URL, {  
-      params: { id } // Pasar el userId como parámetro
+    const response = await axios.get(`${process.env.BASE_URL}/api/v1/readings`, {
+      headers: {
+        Authorization: token, 
+      },
+      params: { userId: id }, 
     });
- 
-    // Si hay lecturas, devolverlas en la respuesta
-    if (response.data && response.data.length > 0) {
-      // Actualizar el atributo listalecturaId con los ids de las lecturas
-      const updatedUser = await User.findByIdAndUpdate(
-        id,
-        { $set: { listalecturaId: response.data.map(lectura => lectura.id) } },
-        { new: true }
-      );
- 
+
+    console.log('Respuesta del microservicio:', response.data); 
+
+    if (response.data && Array.isArray(response.data.genres) && response.data.genres.length > 0) {
       return res.status(200).json({
-        message: 'Listas de lectura obtenidas y actualizadas con éxito.',
-        user: updatedUser,
-        readings: response.data
+        message: 'Listas de lectura obtenidas con éxito.',
+        readings: response.data.genres, 
       });
     } else {
       return res.status(404).json({ message: 'No se encontraron lecturas para este usuario.' });
     }
   } catch (error) {
-    console.error(error);
+    console.error('Error en el endpoint:', error);
+
+    if (error.response) {
+      if (error.response.status === 401) {
+        return res.status(401).json({ message: 'No autorizado: Token inválido o faltante.' });
+      }
+
+      return res.status(error.response.status || 500).json({
+        message: error.response.data.message || 'Error al obtener las lecturas del microservicio.',
+        error: error.response.data || error.message,
+      });
+    }
+
+    return res.status(500).json({ message: 'Error inesperado en el servidor.', error: error.message });
+  }
+});
+
+
+/**
+ * @swagger
+ * /api/v1/auth/users/reviews/user/{userId}/book:
+ *   get:
+ *     summary: Obtiene las reseñas de un usuario para un libro.
+ *     description: Permite obtener todas las reseñas que un usuario ha realizado para libros específicos.
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: El ID del usuario cuyas reseñas se desean consultar.
+ *         schema:
+ *           type: string
+ *           example: "00000000001"
+ *     responses:
+ *       200:
+ *         description: Reseñas del usuario para libros obtenidas exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   bookId:
+ *                     type: string
+ *                     description: ID del libro.
+ *                   review:
+ *                     type: string
+ *                     description: Contenido de la reseña.
+ *                   rating:
+ *                     type: number
+ *                     description: Calificación dada al libro.
+ *       404:
+ *         description: No se encontraron reseñas para este usuario.
+ *       500:
+ *         description: Error inesperado en el servidor.
+ */
+
+router.get('/users/reviews/user/:userId/book', verifyToken, async (req, res) => {
+  console.log('User from Token:', req.user); 
+ 
+  const { userId } = req.params;
+ 
+  try {
+    const token = req.headers.authorization.split(' ')[1]; 
+    const response = await axios.get(`${process.env.BASE_URL}/api/v1/reviews/users/${userId}/bk`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+ 
+    if (!response.data || response.data.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron reseñas para este usuario.' });
+    }
+ 
+    return res.status(200).json({
+      message: 'Reseñas del usuario para libros obtenidas exitosamente.',
+      reviews: response.data,
+    });
+  } catch (error) {
+    console.error('Axios Error:', error.response?.data || error.message);
+    if (error.response && error.response.status === 401) {
+      return res.status(401).json({ message: 'No autorizado: verifica tu token.' });
+    }
     return res.status(500).json({ message: 'Error inesperado en el servidor.', error: error.message });
   }
 });

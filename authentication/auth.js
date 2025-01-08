@@ -20,8 +20,8 @@ const verifyToken = (req, res, next) => {
     if (err) {
       return res.status(403).json({ message: 'Token no válido' });
     }
-    req.user = decoded; // Agrega el usuario decodificado al objeto request
-    next(); // Llama al siguiente middleware o controlador de la ruta
+    req.user = decoded; 
+    next(); 
   });
 };
 
