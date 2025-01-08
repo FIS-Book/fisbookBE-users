@@ -450,7 +450,6 @@ afterAll(async () => {
         });
     });
 
-    /*
     describe("GET /users/:id/readings", () => {
         const userId = "12345";
         const token = "valid-jwt-token";
@@ -610,7 +609,6 @@ afterAll(async () => {
         });
       });
 
-       */
       describe("POST /users/login", () => {
         const userCredentials = {
           email: "juan@example.com",
